@@ -3,7 +3,8 @@
 setlocal
 
 set Root=%~dp0
-set PHP_Path=%~dp0..\..\..\Build\Tools\PHP
+::set PHP_Path=%~dp0..\..\..\Build\Tools\PHP
+set PHP_Path=%~dp0..\..\..\Build\Tools\Php74
 if not exist "%PHP_Path%/php.exe" if exist "%~dp0../_InitPhp.bat" call "%~dp0../_InitPhp.bat"
 if not exist "%PHP_Path%/php.exe" call "%~dp0DownloadPhp.bat" "%PHP_Path%"
 if not exist "%PHP_Path%/php.exe" echo %PHP_Path%/php.exe not found
@@ -19,6 +20,12 @@ if not defined First goto :EndParse
   goto :Parse
 :EndParse
 
-"%PHP_Path%\php.exe" -d memory_limit=256M -c "%PHP_Path%" -f "%PHP_File%" -- %Args%
+set Arg=
+set Arg=%Arg% -d memory_limit=256M
+set Arg=%Arg% -d "extension_dir=%PHP_Path%/ext"
+set Arg=%Arg% -c "%PHP_Path%"
+set Arg=%Arg% -f "%PHP_File%"
+
+"%PHP_Path%\php.exe" %Arg% -- %Args%
 
 endlocal
