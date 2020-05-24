@@ -1,0 +1,19 @@
+<?
+  for($F=__FILE__; $F;) if(@include($F=DirName($F)).'/Using.php') break;
+
+  $Manager=$Loader->Get_Singleton('/UE/Manager');
+  $Engines=$Manager->GetEngines();
+//$Search=$Manager->GetSearch();
+//$Search=$Loader->Get_Singleton('/UE/Search');
+//$Res=$Search->GetList();
+//$Search->Done();
+  ForEach($Engines As $Engine)
+    $Engine->Log('Log', $Engine->GetId(), '=>', $Engine->GetPath(),
+      ' Source: ', ($Engine->IsSource()? 'Yes': 
+        (($Source=$Engine->GetSource())? $Source->GetId(): 'None')
+      )
+    );
+//$Res=Var_Export($Res, true);
+//File_Put_Contents('List_Installed_UE.txt', $Res);
+//echo $Res;
+?>

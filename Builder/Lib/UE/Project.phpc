@@ -1,1 +1,81 @@
-<?  $Loader->Parent_Class('/Object');  class C_UE_Project extends C_Object  {    Protected $FileProject ;    Protected $Info        ;    Protected $Manager     ;        Function _Init(Array $Args)    {      parent::_Init($Args);      $this->Manager     =$Args['Manager'     ];      $this->FileProject =$Args['FileProject' ];      $this->FileProject =RealPath($this->FileProject);    }    Function GetManager() { return $this->Manager; }    Function GetFileProjectPath() { return $this->FileProject; }        Function GetName()    {      return $this->GetInfo()['Modules'][0]['Name'];    }     Function _GetInfo()    {      return $this->Info=Json_DeCode(File_Get_Contents($this->FileProject), true);    }        Function GetInfo()    {      return $this->Info ?? $this->_GetInfo();    }        Function GetEngineVersion()    {      return $this->GetInfo()['EngineAssociation'] ?? false;    }        Function GetEngine()    {      return $this->GetManager()->GetEngine($this->GetEngineVersion());    }        Function CreateBuilder()    {      return $this->Create_Object('/UE/Builder', [        'Manager' =>$this->GetManager(),        'Project' =>$this,        'Engine'  =>$this->GetEngine(),      ]);    }  };  ?>
+<?
+  $Loader->Parent_Class('/Object');
+
+  class C_UE_Project extends C_Object
+  {
+    Protected $File    ;
+    Protected $Path    ;
+    Protected $Info    ;
+    Protected $Manager ;
+    Protected $Name    ;
+    
+    Function _Init(Array $Args)
+    {
+      parent::_Init($Args);
+      $this->Manager=$Args['Manager'];
+      $File=$Args['File'];
+      if($File==='')
+      {
+        $File=GetCwd();
+        while(true)
+        {
+        //echo $File, "\n";
+          if(!Is_Dir($File))
+            break;
+          if($List=Glob(StrTr($File.'/*.uproject', ['\\'=>'\\\\', '['=>'\\[']), GLOB_NOSORT))
+          {
+            $File=RealPath($List[0]);
+            break;
+          }
+          $OldFile=$File;
+          $File=DirName($File);
+          if($File===$OldFile)
+            break;
+        }
+      }
+      if(($l=StrLen($File))===0 || ($c=$File[$l-1])==='/' || $c==='\\' )
+        $File.='*.uproject';
+      if(StrPos($File, '*')!==False)
+        if($List=Glob(StrTr($File, ['\\'=>'\\\\', '['=>'\\[']), GLOB_NOSORT))
+          $File=$List[0];
+      $File=RealPath($File);
+      $this->File=          $File ;
+      $this->Name=BaseName ($File, '.uproject');
+      $this->Path=DirName  ($File).'/';
+    }
+
+    Function GetName    () { return $this->Name    ; }
+    Function GetManager () { return $this->Manager ; }
+    Function GetFile    () { return $this->File    ; }
+    Function GetPath    () { return $this->Path    ; }
+    
+    Function GetNameInfo() { return $this->GetInfo()['Modules'][0]['Name']; }
+ 
+    Function _GetInfo()
+    {
+      return $this->Info=Json_DeCode(File_Get_Contents($this->File), true);
+    }
+    
+    Function GetVcs()
+    {
+      return $this->Create_Object('/UE/Vcs', [
+        'Exec'=>$this->GetEngine()->GetSvnExe(), 
+        'Path'=>$this->GetPath(),
+      ]);
+    }
+
+    Function GetInfo() { return $this->Info ?? $this->_GetInfo(); }
+    Function GetEngineVersion() { return $this->GetInfo()['EngineAssociation'] ?? false; }
+    Function GetEngine() { return $this->GetManager()->GetEngine($this->GetEngineVersion()); }
+    
+    Function CreateBuilder()
+    {
+      return $this->Create_Object('/UE/Builder', [
+        'Manager' =>$this->GetManager(),
+        'Project' =>$this,
+        'Engine'  =>$this->GetEngine(),
+      ]);
+    }
+  };
+  
+?>

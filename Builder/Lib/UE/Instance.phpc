@@ -1,1 +1,82 @@
-<?  $Loader->Parent_Class('/Object');  class C_UE_Instance extends C_Object  {    Protected $Manager ;    Protected $Path    ;    Protected $Version ;        Function _Init(Array $Args)    {      parent::_Init($Args);      $this->Manager =$Args['Manager' ];      $this->Path    =$Args['Path'    ];      $this->Version =$Args['Version' ];    }        Function GetVersionStr() { return $this->Version; }    Function GetPath() { return $this->Path; }    function GetAutomationToolPath()    {      $Res=$this->Path.'/Engine/Build/BatchFiles/RunUAT';      switch(PHP_OS_FAMILY)      {      case 'Linux'   :    //case 'OSX'     : ??      case 'BSD'     :      case 'Darwin'  :      case 'Solaris' :      case 'Unknown' :        $Res.='.sh';        break;      case 'Windows':        $Res.='.bat';        break;      }            return $Res;    }  };  ?>
+<?
+  $Loader->Parent_Class('/Object');
+
+  class C_UE_Instance extends C_Object
+  {
+    Protected $Manager      ;
+    Protected $Path         ;
+    Protected $Id           ;
+    Protected $Version      ;
+    Protected $MajorVersion ;
+    Protected $MinorVersion ;
+    Protected $PatchVersion ;
+    Protected $Source       =null;
+    
+    Function _Init(Array $Args)
+    {
+      parent::_Init($Args);
+      $this->Manager              =$Args['Manager'              ];
+      $this->Path                 =$Args['Path'                 ];
+      $this->Id                   =$Args['Id'                   ];
+      $this->Version              =$Args['Version'              ];
+      $this->MajorVersion         =$Args['MajorVersion'         ];
+      $this->MinorVersion         =$Args['MinorVersion'         ];
+      $this->PatchVersion         =$Args['PatchVersion'         ];
+    # $this->Changelist           =$Args['Changelist'           ]: //4753647,
+    # $this->CompatibleChangelist =$Args['CompatibleChangelist' ]: //4541578,
+    # $this->IsLicenseeVersion    =$Args['IsLicenseeVersion'    ]: //0,
+    # $this->IsPromotedBuild      =$Args['IsPromotedBuild'      ]: //1,
+    # $this->BranchName           =$Args['BranchName'           ]: //"++UE4+Release-4.21,
+    # $this->BuildId              =$Args['BuildId'              ]??false: //"",
+    # $this->BuildVersion         =$Args['BuildVersion'         ]??false: //""
+      $this->Version              =$this->MajorVersion.'.'.$this->MinorVersion;
+    }
+    
+    Function IsSource() { return $this->Id[0]==='{'; }
+
+    Function GetId         () { return $this->Id      ; }
+    Function GetVersionStr () { return $this->Version ; }
+    Function GetPath       () { return $this->Path    ; }
+    Function GetSource     () { return $this->Source ?? ($this->IsSource()? $this:null); }
+    Function SetSource     ($v) { $this->Source=$v; }
+    Function GetSvnExe()
+    {
+      switch(PHP_OS_FAMILY)
+      {
+      case 'Linux'   :
+    //case 'OSX'     : ??
+      case 'BSD'     :
+      case 'Darwin'  :
+      case 'Solaris' :
+      case 'Unknown' :
+        break;
+      case 'Windows':
+        return $this->Path.'/Engine/Binaries/ThirdParty/svn/Win64/svn.exe';
+      }
+      
+      return '';
+    }
+    
+    function GetAutomationToolPath()
+    {
+      $Res=$this->Path.'/Engine/Build/BatchFiles/RunUAT';
+      switch(PHP_OS_FAMILY)
+      {
+      case 'Linux'   :
+    //case 'OSX'     : ??
+      case 'BSD'     :
+      case 'Darwin'  :
+      case 'Solaris' :
+      case 'Unknown' :
+        $Res.='.sh';
+        break;
+      case 'Windows':
+        $Res.='.bat';
+        break;
+      }
+      
+      return $Res;
+    }
+  };
+  
+?>

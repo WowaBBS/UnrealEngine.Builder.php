@@ -1,1 +1,79 @@
-<?  $Loader->Parent_Class('/Object');  //  // PROGRAMDATA  // ALLUSERPROFILE  //FPlatformProcess::ApplicationSettingsDir()/"UnrealEngineLauncher/LauncherInstalled.dat";  class C_UE_Search extends C_Object  {    Static Function ApplicationSettingsDir()    {      return GetEnv('ProgramData').'/Epic';    }      Protected Function _GetList()    {      $Res=[];            $Reg=$this->Create_Object('/System/Reg');      $List=$Reg->SearchParam(        [          'HKLM\SOFTWARE\EpicGames\Unreal Engine',        ],        ['InstalledDirectory'],        ['Recursive'=>true]      );      ForEach($List As $Key=>$Item)      {        $Key=Explode('\\', $Key);        $Key=$Key[Count($Key)-1];        $InstalledDirectory =$Item['InstalledDirectory' ]??false;        if(!$InstalledDirectory)          continue;        $InstalledDirectory=StrTr($InstalledDirectory, '\\', '/');        $Res[$Key]=$InstalledDirectory;      }            $List=$Reg->SearchParam([        'HKCU\Software\Epic Games\Unreal Engine\Builds',      ]);      ForEach($List As $Items)        ForEach($Items As $Key=>$Value)          $Res[$Key]=$Value;          $LauncherInstalled_File=Static::ApplicationSettingsDir().'/UnrealEngineLauncher/LauncherInstalled.dat';      $LauncherInstalled_Data=File_Get_Contents($LauncherInstalled_File);      $LauncherInstalled=Json_DeCode($LauncherInstalled_Data, true);      ForEach($LauncherInstalled['InstallationList'] As $Item)      {        $InstallLocation =$Item['InstallLocation' ];        $AppName         =$Item['AppName'         ];        $InstallLocation=StrTr($InstallLocation, '\\', '/');      //$this->Log('Log', $InstallLocation);        if(SubStr($AppName, 0, 3)==='UE_')          $Res[SubStr($AppName, 3)]=$InstallLocation;      }            return $this->Cache=$Res;    }        Var $Cache=null;        Function GetList()    {      return $this->Cache ?? $this->_GetList();    }  };  ?>
+<?
+  $Loader->Parent_Class('/Object');
+
+  //
+  // PROGRAMDATA
+  // ALLUSERPROFILE
+  //FPlatformProcess::ApplicationSettingsDir()/"UnrealEngineLauncher/LauncherInstalled.dat";
+  class C_UE_Search extends C_Object
+  {
+    Static Function ApplicationSettingsDir()
+    {
+      return GetEnv('ProgramData').'/Epic';
+    }
+  
+    Protected Function _GetList()
+    {
+      $List=[];
+      
+      $Reg=$this->Create_Object('/System/Reg');
+      $ListReg=$Reg->SearchParam(
+        [
+          'HKLM\SOFTWARE\EpicGames\Unreal Engine',
+        ],
+        ['InstalledDirectory'],
+        ['Recursive'=>true]
+      );
+      ForEach($ListReg As $Key=>$Item)
+      {
+        $Key=Explode('\\', $Key);
+        $Key=$Key[Count($Key)-1];
+        $InstalledDirectory =$Item['InstalledDirectory' ]??false;
+        if(!$InstalledDirectory)
+          continue;
+        $InstalledDirectory=StrTr($InstalledDirectory, '\\', '/');
+        $List[$Key]=$InstalledDirectory;
+      }
+      
+      $ListReg=$Reg->SearchParam([
+        'HKCU\Software\Epic Games\Unreal Engine\Builds',
+      ]);
+      ForEach($ListReg As $Items)
+        ForEach($Items As $Key=>$Value)
+          $List[$Key]=$Value;
+    
+      $LauncherInstalled_File=Static::ApplicationSettingsDir().'/UnrealEngineLauncher/LauncherInstalled.dat';
+      $LauncherInstalled_Data=File_Get_Contents($LauncherInstalled_File);
+      $LauncherInstalled=Json_DeCode($LauncherInstalled_Data, true);
+      ForEach($LauncherInstalled['InstallationList'] As $Item)
+      {
+        $InstallLocation =$Item['InstallLocation' ];
+        $AppName         =$Item['AppName'         ];
+        $InstallLocation=StrTr($InstallLocation, '\\', '/');
+      //$this->Log('Log', $InstallLocation);
+        if(SubStr($AppName, 0, 3)==='UE_')
+          $List[SubStr($AppName, 3)]=$InstallLocation;
+      }
+      
+      $Res=[];
+    # $this->Debug($List);
+      ForEach($List As $Name=>$Path)
+        if(Is_File($FileVersion=$Path.'/Engine/Build/Build.version'))
+          $Res[$Name]=[
+            'Id'          =>$Name        ,
+            'Path'        =>$Path        ,
+            'FileVersion' =>$FileVersion ,
+          ]+Json_Decode(File_Get_Contents($FileVersion), true);
+      
+      return $this->Cache=$Res;
+    }
+    
+    Var $Cache=null;
+    
+    Function GetList()
+    {
+      return $this->Cache ?? $this->_GetList();
+    }
+  };
+  
+?>

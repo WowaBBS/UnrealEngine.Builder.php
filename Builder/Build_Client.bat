@@ -1,3 +1,9 @@
+@echo off
+
+call "%~dp0Lib\Init.bat"
 
 set WBuild_Root=%~dp0
-call "%WBuild_Root%\Lib\scripts\call_php.bat" "%WBuild_Root%\Build_Client.php7" %*
+set Arg=
+set Arg=%Arg% -OutputFolder Build
+::set Arg=%Arg% -CompileMode Development
+%Call_Php% "%WBuild_Root%\Lib\Build.php7" %Arg% %*

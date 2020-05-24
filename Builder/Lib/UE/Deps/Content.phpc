@@ -1,1 +1,142 @@
-<?//Require_Once 'Lib/FS/Utils.php';  //Require_Once 'Asset.php';  $this->Load_Lib('/UE/Deps/AssetTools');    class C_UE_Deps_Content extends C_Object  {    Var $UE     ;    Var $Path   = '';    Var $Prefix = '/Game';    Var $Save   = false;    Var $Exts=Array(      'uasset'   =>true ,      'umap'     =>true ,      'bmp'      =>false,      'xml'      =>false,      'png'      =>false,      'avi'      =>false,      'fbx'      =>false,      'mb'       =>false,      'ini'      =>false,      'manifest' =>false,      'txt'      =>false,      'po'       =>false,      'archive'  =>false,      'csv'      =>false,      'locres'   =>false,      'mp4'      =>false,    );        Function Init($UE, $Path, $Prefix, $Save=false)    {      $this->UE     =$UE     ;      $this->Path   =$Path   ;      $this->Prefix =$Prefix ;      $this->Save   =$Save   ;    }        Function _Done()    {      $this->UE=null;      Parent::_Done();    }        Function GetFilePath($AssetPath)    {      $Prefix=$this->Prefix;      $l=StrLen($Prefix);      if(SubStr($AssetPath, 0, $l)!==$Prefix)        return '';      return $this->Path.SubStr($AssetPath, $l);    }        Function LoadAssets()    {      $UE      =$this->UE     ;      $Exts    =$this->Exts   ;      $Path    =$this->Path   ;      $Prefix  =$this->Prefix ;      $Save    =$this->Save   ;      $PathLen =StrLen($Path);      $Log     =$UE->Log;            if(!Is_Dir($Path)) return;            $Stack  =Array($Path);      $Assets=&$UE->Assets;      While(IsSet($Stack[0]))      {        $Dir=Array_Pop($Stack);        If(!($Handle=OpenDir($Dir)))          Continue;              $Empty=$Save;        while(False !== ($Name=ReadDir($Handle)))        {          if($Name==='.'  ) continue;          if($Name==='..' ) continue;                    $DirName=$Dir.'/'.$Name;                    if(Is_Dir($DirName))          {            $Empty=false;            Array_Push($Stack, $DirName);            if(!IsAssetName($Name))              $Log->BadName($DirName);          }          elseif(Is_File($DirName))          {            if(!IsAssetName(strtr($Name, '.', '_')))              $Log->BadName($DirName);            $Ext=GetFileNameExt($DirName);            if($Exts[$Ext] ?? false)            {              $AssetPath=$Prefix.GetAssetPath(SubStr($DirName, $PathLen));              if($Assets->Exists($AssetPath))              {                if($Save)                  UnLink($DirName);                else                {                  $Empty=false;                  echo '[Error] asset already exists: '.$AssetPath,"\n";                  echo '  New='.$DirName,"\n";                  echo '  Old='.$Asset->GetFilePath(),"\n";                }              }              else              {                $Empty=false;                $Asset=$this->Create_Object('/UE/Deps/Asset', [                  'Content'  =>$this      ,                  'Path'     =>$AssetPath ,                  'Ext'      =>$Ext       ,                  'FilePath' =>$DirName   ,                ]);                $Assets->Set($Asset);              }            }            elseif(!IsSet($Exts[$Ext]))            {              $Empty=false;              $Exts[$Ext]=false;              echo '[Error] Unknown ext ',$Ext,"\n";            }            else            {              $Empty=false;              // TODO            }          }        }        CloseDir($Handle);        if($Empty)          RmDir($Dir);      }      //Sort($Res, SORT_STRING);      //return $Res;    }  }?>
+<?
+//Require_Once 'Lib/FS/Utils.php';  
+//Require_Once 'Asset.php';
+  $this->Load_Lib('/UE/Deps/AssetTools');
+  
+  class C_UE_Deps_Content extends C_Object
+  {
+    Var $UE     ;
+    Var $Path   = '';
+    Var $Prefix = '/Game';
+    Var $Save   = false;
+    Var $Exts=Array(
+      'uasset'   =>true ,
+      'umap'     =>true ,
+      'bmp'      =>false,
+      'xml'      =>false,
+      'png'      =>false,
+      'avi'      =>false,
+      'fbx'      =>false,
+      'mb'       =>false,
+      'ini'      =>false,
+      'manifest' =>false,
+      'txt'      =>false,
+      'po'       =>false,
+      'archive'  =>false,
+      'csv'      =>false,
+      'locres'   =>false,
+      'mp4'      =>false,
+    );
+    
+    Function Init($UE, $Path, $Prefix, $Save=false)
+    {
+      $this->UE     =$UE     ;
+      $this->Path   =$Path   ;
+      $this->Prefix =$Prefix ;
+      $this->Save   =$Save   ;
+    }
+    
+    Function _Done()
+    {
+      $this->UE=null;
+      Parent::_Done();
+    }
+    
+    Function GetFilePath($AssetPath)
+    {
+      $Prefix=$this->Prefix;
+      $l=StrLen($Prefix);
+      if(SubStr($AssetPath, 0, $l)!==$Prefix)
+        return '';
+      return $this->Path.SubStr($AssetPath, $l);
+    }
+    
+    Function LoadAssets()
+    {
+      $UE      =$this->UE     ;
+      $Exts    =$this->Exts   ;
+      $Path    =$this->Path   ;
+      $Prefix  =$this->Prefix ;
+      $Save    =$this->Save   ;
+      $PathLen =StrLen($Path);
+      $Log     =$UE->Log;
+      
+      if(!Is_Dir($Path)) return;
+      
+      $Stack  =Array($Path);
+      $Assets=&$UE->Assets;
+      While(IsSet($Stack[0]))
+      {
+        $Dir=Array_Pop($Stack);
+        If(!($Handle=OpenDir($Dir)))
+          Continue;
+      
+        $Empty=$Save;
+        while(False !== ($Name=ReadDir($Handle)))
+        {
+          if($Name==='.'  ) continue;
+          if($Name==='..' ) continue;
+          
+          $DirName=$Dir.'/'.$Name;
+          
+          if(Is_Dir($DirName))
+          {
+            $Empty=false;
+            Array_Push($Stack, $DirName);
+            if(!IsAssetName($Name))
+              $Log->BadName($DirName);
+          }
+          elseif(Is_File($DirName))
+          {
+            if(!IsAssetName(strtr($Name, '.', '_')))
+              $Log->BadName($DirName);
+            $Ext=GetFileNameExt($DirName);
+            if($Exts[$Ext] ?? false)
+            {
+              $AssetPath=$Prefix.GetAssetPath(SubStr($DirName, $PathLen));
+              if($Assets->Exists($AssetPath))
+              {
+                if($Save)
+                  UnLink($DirName);
+                else
+                {
+                  $Empty=false;
+                  echo '[Error] asset already exists: '.$AssetPath,"\n";
+                  echo '  New='.$DirName,"\n";
+                  echo '  Old='.$Asset->GetFilePath(),"\n";
+                }
+              }
+              else
+              {
+                $Empty=false;
+                $Asset=$this->Create_Object('/UE/Deps/Asset', [
+                  'Content'  =>$this      ,
+                  'Path'     =>$AssetPath ,
+                  'Ext'      =>$Ext       ,
+                  'FilePath' =>$DirName   ,
+                ]);
+                $Assets->Set($Asset);
+              }
+            }
+            elseif(!IsSet($Exts[$Ext]))
+            {
+              $Empty=false;
+              $Exts[$Ext]=false;
+              echo '[Error] Unknown ext ',$Ext,"\n";
+            }
+            else
+            {
+              $Empty=false;
+              // TODO
+            }
+          }
+        }
+        CloseDir($Handle);
+        if($Empty)
+          RmDir($Dir);
+      }
+      //Sort($Res, SORT_STRING);
+      //return $Res;
+    }
+  }
+?>

@@ -1,1 +1,91 @@
-<?  $Loader->Parent_Class('/UE/Deps/Log/Base');  $Loader->Load_Lib('/FS/Param'); //  $Loader->Load_Type('/FS/Param');    class C_UE_Deps_Log_Numerated extends C_UE_Deps_Log_Base  {    Var $List=[];    Var $Exclude=null;      Protected Function _Init(Array $Args)    {      Parent::_Init($Args);      $this->Exclude=new T_FS_Param();      $this->Exclude->Def=false;      if($Exclude=$Args['Exclude']?? [])        $this->Exclude->Append($Exclude);    }        Function Add($From, $ToAsset)    {      $Path=$ToAsset->Path;      if($this->Exclude->Get($Path))        return;      $path=StrToLower($Path);      if(!IsSet($this->List[$path]))      {        $List=Array();        if($ToAsset->Exists)          $List[$ToAsset->Path]=true;        ForEach($ToAsset->Numerated as $Asset)          $List[  $Asset->Path]=true;        $this->List[$path]=[          'Group'=>$Path,          'Assets'=>$List,          'UsedFrom'=>[],        ];      }       if($From!=='')        if(!IsSet($this->List[$path]['Assets'][$From]))          $this->List[$path]['UsedFrom'][$From]=true;    }        Function Save()    {      $Res=Array();      Array_Push($Res, "Please rename follow assets:\n");      ForEach($this->List As $Item)      {        Array_Push($Res, '  Group ',$Item['Group'], "\n");        Array_Push($Res, "    Assets:\n");        ForEach($Item['Assets'] As $Asset=>$Tmp)          Array_Push($Res, '      ', $Asset, "\n");        $UsedFrom=$Item['UsedFrom'];        if(Count($UsedFrom)>0)        {          Array_Push($Res, "    UsedFrom:\n");          ForEach($UsedFrom As $UsedFromItem=>$Tmp)            Array_Push($Res, '      ',$UsedFromItem,"\n");        }        Array_Push($Res, "\n");      }      $this->_Save('Numerated', Implode($Res));    }        Function Clear()    {      parent::Clear();      $this->List=[];    }        Function Make_Renaming_List()    {      $Res=[];      ForEach($this->List As $Item)      {        $Group=$Item['Group'];        $GroupLen=StrLen($Group);        $GroupFile=FilePath_GetFileName($Group);        ForEach($Item['Assets'] As $Asset=>$Tmp)        {          $End=SubStr($Asset, $GroupLen);          $End=StrTr($End, '_', '-');          Array_Push($Res, $Asset.' '.$GroupFile.$End."\n");        }      }      Return Implode('', $Res);    }  }?>
+<?
+  $Loader->Parent_Class('/UE/Deps/Log/Base');
+  $Loader->Load_Lib('/FS/Param'); //  $Loader->Load_Type('/FS/Param');
+  
+  class C_UE_Deps_Log_Numerated extends C_UE_Deps_Log_Base
+  {
+    Var $List=[];
+    Var $Exclude=null;
+  
+    Protected Function _Init(Array $Args)
+    {
+      Parent::_Init($Args);
+
+      $this->Exclude=new T_FS_Param();
+      $this->Exclude->Def=false;
+      if($Exclude=$Args['Exclude']?? [])
+        $this->Exclude->Append($Exclude);
+    }
+    
+    Function Add($From, $ToAsset)
+    {
+      $Path=$ToAsset->Path;
+      if($this->Exclude->Get($Path))
+        return;
+      $path=StrToLower($Path);
+      if(!IsSet($this->List[$path]))
+      {
+        $List=Array();
+        if($ToAsset->Exists)
+          $List[$ToAsset->Path]=true;
+        ForEach($ToAsset->Numerated as $Asset)
+          $List[  $Asset->Path]=true;
+        $this->List[$path]=[
+          'Group'=>$Path,
+          'Assets'=>$List,
+          'UsedFrom'=>[],
+        ];
+      }
+ 
+      if($From!=='')
+        if(!IsSet($this->List[$path]['Assets'][$From]))
+          $this->List[$path]['UsedFrom'][$From]=true;
+    }
+    
+    Function Save()
+    {
+      $Res=Array();
+      Array_Push($Res, "Please rename follow assets:\n");
+      ForEach($this->List As $Item)
+      {
+        Array_Push($Res, '  Group ',$Item['Group'], "\n");
+        Array_Push($Res, "    Assets:\n");
+        ForEach($Item['Assets'] As $Asset=>$Tmp)
+          Array_Push($Res, '      ', $Asset, "\n");
+        $UsedFrom=$Item['UsedFrom'];
+        if(Count($UsedFrom)>0)
+        {
+          Array_Push($Res, "    UsedFrom:\n");
+          ForEach($UsedFrom As $UsedFromItem=>$Tmp)
+            Array_Push($Res, '      ',$UsedFromItem,"\n");
+        }
+        Array_Push($Res, "\n");
+      }
+      $this->_Save('Numerated', Implode($Res));
+    }
+    
+    Function Clear()
+    {
+      parent::Clear();
+      $this->List=[];
+    }
+    
+    Function Make_Renaming_List()
+    {
+      $Res=[];
+      ForEach($this->List As $Item)
+      {
+        $Group=$Item['Group'];
+        $GroupLen=StrLen($Group);
+        $GroupFile=FilePath_GetFileName($Group);
+        ForEach($Item['Assets'] As $Asset=>$Tmp)
+        {
+          $End=SubStr($Asset, $GroupLen);
+          $End=StrTr($End, '_', '-');
+          Array_Push($Res, $Asset.' '.$GroupFile.$End."\n");
+        }
+      }
+      Return Implode('', $Res);
+    }
+  }
+?>

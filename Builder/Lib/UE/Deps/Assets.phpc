@@ -1,1 +1,138 @@
-<?   class C_UE_Deps_Assets extends C_Object  {    Var $UE;    Var $List=Array();    Var $Classes=Array();     Function Exists($Name)    {      return IsSet($this->List[StrToLower($Name)]);    }     Function Get($Name)    {      return $this->List[StrToLower($Name)];    }     Function GetByClass($Name)    {      $Res=$this->Classes[$Name];      return IsSet($Res)? $Res:Array();    }     Function Set($Asset)    {      $path=StrToLower($Asset->Path);      $this->List[$path]=$Asset;            $Cl=&$this->Classes[$Asset->Class];      if(!IsSet($Cl))        $Cl=Array();      $Cl[]=$path;    }        Function _Done()    {      ForEach($this->List As $Asset)        $Asset->Done();      $this->List=Array();      $this->UE=null;      Parent::_Done();    }        Function Check_Numeration()    {      ForEach($this->List As $Asset)        $Asset->Check_Numeration();    }        Function SaveUndepended()    {      ForEach($this->List As $Asset)        $Asset->SetSave($Asset->Required!==1);    }     Function RestoreSaved()    {      ForEach($this->List As $Asset)        $Asset->SetSave(false);    }        Function Check_Dependances()    {      $Assets  =$this->List    ;      $Classes =$this->Classes ;      $Stack=Array();      ForEach($Assets As $Asset)        if($Asset->Required===1)          $Stack[]=$Asset;            $Log=$this->UE->Log;      While(IsSet($Stack[0]))      {        $Asset=Array_Pop($Stack);                $ClsTest=Array();                // Depend        $Strs=$Asset->GetDepend();        ForEach($Strs As $Str)        {          $str=StrToLower($Str);          if(!IsSet($Assets[$str]))          {            $Log->Undepend($Asset->Path, $Str);          }          else          {            $SubAsset=$Assets[$str];            $ClsTest[$SubAsset->Class]=true;            if($SubAsset->Path!==$Str)              $Log->DependCase($Asset->Path, $Str, $SubAsset->Path);            if(Count($SubAsset->Numerated)>0 && $Asset->Exists)              $Log->Numerated($Asset->Path, $SubAsset);            if($SubAsset->Required===~0)            {              $SubAsset->Required=1;              $Stack[]=$SubAsset;            }          }        }        // End Depend                // Classes        if(false)        {          $Strs=$Asset->GetClasses();          ForEach($Strs As $Class)          {            $Strs=$Classes[$Class];            if(IsSet($Strs))              ForEach($Strs As $str)              {                $SubAsset=$Assets[$str];              //if($SubAsset->Path!==$Str)              //  $Log->DependCase($Asset->Path, $Str, $SubAsset->Path);              //if(Count($SubAsset->Numerated)>0 && $Asset->Exists)              //  $Log->Numerated($Asset->Path, $SubAsset);                if(!IsSet($ClsTest[$SubAsset->Class]))                {                  $Log->ClassLink($Asset->Path, $Class);                }                                if($SubAsset->Required===~0)                {                  $SubAsset->Required=1;                  $Stack[]=$SubAsset;                }              }          }        }        // End Classes      }    }  }?>
+<?
+ 
+  class C_UE_Deps_Assets extends C_Object
+  {
+    Var $UE;
+    Var $List=Array();
+    Var $Classes=Array();
+ 
+    Function Exists($Name)
+    {
+      return IsSet($this->List[StrToLower($Name)]);
+    }
+ 
+    Function Get($Name)
+    {
+      return $this->List[StrToLower($Name)];
+    }
+ 
+    Function GetByClass($Name)
+    {
+      $Res=$this->Classes[$Name];
+      return IsSet($Res)? $Res:Array();
+    }
+ 
+    Function Set($Asset)
+    {
+      $path=StrToLower($Asset->Path);
+      $this->List[$path]=$Asset;
+      
+      $Cl=&$this->Classes[$Asset->Class];
+      if(!IsSet($Cl))
+        $Cl=Array();
+      $Cl[]=$path;
+    }
+    
+    Function _Done()
+    {
+      ForEach($this->List As $Asset)
+        $Asset->Done();
+      $this->List=Array();
+      $this->UE=null;
+      Parent::_Done();
+    }
+    
+    Function Check_Numeration()
+    {
+      ForEach($this->List As $Asset)
+        $Asset->Check_Numeration();
+    }
+    
+    Function SaveUndepended()
+    {
+      ForEach($this->List As $Asset)
+        $Asset->SetSave($Asset->Required!==1);
+    }
+ 
+    Function RestoreSaved()
+    {
+      ForEach($this->List As $Asset)
+        $Asset->SetSave(false);
+    }
+    
+    Function Check_Dependances()
+    {
+      $Assets  =$this->List    ;
+      $Classes =$this->Classes ;
+      $Stack=Array();
+      ForEach($Assets As $Asset)
+        if($Asset->Required===1)
+          $Stack[]=$Asset;
+      
+      $Log=$this->UE->Log;
+      While(IsSet($Stack[0]))
+      {
+        $Asset=Array_Pop($Stack);
+        
+        $ClsTest=Array();
+        
+        // Depend
+        $Strs=$Asset->GetDepend();
+        ForEach($Strs As $Str)
+        {
+          $str=StrToLower($Str);
+          if(!IsSet($Assets[$str]))
+          {
+            $Log->Undepend($Asset->Path, $Str);
+          }
+          else
+          {
+            $SubAsset=$Assets[$str];
+            $ClsTest[$SubAsset->Class]=true;
+            if($SubAsset->Path!==$Str)
+              $Log->DependCase($Asset->Path, $Str, $SubAsset->Path);
+            if(Count($SubAsset->Numerated)>0 && $Asset->Exists)
+              $Log->Numerated($Asset->Path, $SubAsset);
+            if($SubAsset->Required===~0)
+            {
+              $SubAsset->Required=1;
+              $Stack[]=$SubAsset;
+            }
+          }
+        }
+        // End Depend
+        
+        // Classes
+        if(false)
+        {
+          $Strs=$Asset->GetClasses();
+          ForEach($Strs As $Class)
+          {
+            $Strs=$Classes[$Class];
+            if(IsSet($Strs))
+              ForEach($Strs As $str)
+              {
+                $SubAsset=$Assets[$str];
+              //if($SubAsset->Path!==$Str)
+              //  $Log->DependCase($Asset->Path, $Str, $SubAsset->Path);
+              //if(Count($SubAsset->Numerated)>0 && $Asset->Exists)
+              //  $Log->Numerated($Asset->Path, $SubAsset);
+                if(!IsSet($ClsTest[$SubAsset->Class]))
+                {
+                  $Log->ClassLink($Asset->Path, $Class);
+                }
+                
+                if($SubAsset->Required===~0)
+                {
+                  $SubAsset->Required=1;
+                  $Stack[]=$SubAsset;
+                }
+              }
+          }
+        }
+        // End Classes
+      }
+    }
+  }
+
+?>

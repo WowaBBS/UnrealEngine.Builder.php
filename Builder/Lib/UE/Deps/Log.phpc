@@ -1,1 +1,46 @@
-<?//Require_Once 'Lib/FS/Utils.php'; //Require_Once 'Log/Undepend.php'   ;//Require_Once 'Log/DependCase.php' ;//Require_Once 'Log/Numerated.php'  ;//Require_Once 'Log/ClassLink.php'  ;//Require_Once 'Log/BadName.php'    ;   class C_UE_Deps_Log extends C_Object  {    Var $Undepend   =null;    Var $DependCase =null;    Var $Numerated  =null;    Var $ClassLink  =null;    Var $BadName    =null;                                                    Function Undepend   ($From, $To)         { $this->Undepend   ->Add($From, $To)         ; }    Function DependCase ($From, $Ref, $Need) { $this->DependCase ->Add($From, $Ref, $Need) ; }    Function Numerated  ($From, $ToAsset)    { $this->Numerated  ->Add($From, $ToAsset)    ; }    Function ClassLink  ($FromPath, $Class)  { $this->ClassLink  ->Add($FromPath, $Class)  ; }    Function BadName    ($Path)              { $this->BadName    ->Add($Path)              ; }        Protected Function _Init(Array $Args)    {      Parent::_Init($Args);      $this->Undepend   = $this->Create_Object('/UE/Deps/Log/Undepend'   ,$Args['Undepend'   ]??[]);      $this->DependCase = $this->Create_Object('/UE/Deps/Log/DependCase' ,$Args['DependCase' ]??[]);      $this->Numerated  = $this->Create_Object('/UE/Deps/Log/Numerated'  ,$Args['Numerated'  ]??[]);      $this->ClassLink  = $this->Create_Object('/UE/Deps/Log/ClassLink'  ,$Args['ClassLink'  ]??[]);      $this->BadName    = $this->Create_Object('/UE/Deps/Log/BadName'    ,$Args['BadName'    ]??[]);    }        Function _Done()    {      $this->Undepend   ->Done();      $this->DependCase ->Done();      $this->Numerated  ->Done();      $this->ClassLink  ->Done();      $this->BadName    ->Done();            Parent::_Done();    }  }?>
+<?
+//Require_Once 'Lib/FS/Utils.php';
+ 
+//Require_Once 'Log/Undepend.php'   ;
+//Require_Once 'Log/DependCase.php' ;
+//Require_Once 'Log/Numerated.php'  ;
+//Require_Once 'Log/ClassLink.php'  ;
+//Require_Once 'Log/BadName.php'    ;
+ 
+  class C_UE_Deps_Log extends C_Object
+  {
+    Var $Undepend   =null;
+    Var $DependCase =null;
+    Var $Numerated  =null;
+    Var $ClassLink  =null;
+    Var $BadName    =null;
+                                                
+    Function Undepend   ($From, $To)         { $this->Undepend   ->Add($From, $To)         ; }
+    Function DependCase ($From, $Ref, $Need) { $this->DependCase ->Add($From, $Ref, $Need) ; }
+    Function Numerated  ($From, $ToAsset)    { $this->Numerated  ->Add($From, $ToAsset)    ; }
+    Function ClassLink  ($FromPath, $Class)  { $this->ClassLink  ->Add($FromPath, $Class)  ; }
+    Function BadName    ($Path)              { $this->BadName    ->Add($Path)              ; }
+    
+    Protected Function _Init(Array $Args)
+    {
+      Parent::_Init($Args);
+
+      $this->Undepend   = $this->Create_Object('/UE/Deps/Log/Undepend'   ,$Args['Undepend'   ]??[]);
+      $this->DependCase = $this->Create_Object('/UE/Deps/Log/DependCase' ,$Args['DependCase' ]??[]);
+      $this->Numerated  = $this->Create_Object('/UE/Deps/Log/Numerated'  ,$Args['Numerated'  ]??[]);
+      $this->ClassLink  = $this->Create_Object('/UE/Deps/Log/ClassLink'  ,$Args['ClassLink'  ]??[]);
+      $this->BadName    = $this->Create_Object('/UE/Deps/Log/BadName'    ,$Args['BadName'    ]??[]);
+    }
+    
+    Function _Done()
+    {
+      $this->Undepend   ->Done();
+      $this->DependCase ->Done();
+      $this->Numerated  ->Done();
+      $this->ClassLink  ->Done();
+      $this->BadName    ->Done();
+      
+      Parent::_Done();
+    }
+  }
+?>

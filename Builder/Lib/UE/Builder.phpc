@@ -1,1 +1,215 @@
-<?  $Loader->Parent_Class('/Object');  $Loader->Load_Module('/FS/IOFS');  $Loader->Load_Lib('/FS/Utils');  class C_UE_Builder extends C_Object  {    Protected $Manager  ;    Protected $Project  ;    Protected $Engine   ;    // ERROR: The platform name WindowsNoEditor is not a valid platform name. Valid names are    Protected $Platform ='Win64'; // Win32,Win64,HoloLens,Mac,XboxOne,PS4,IOS,Android,HTML5,Linux,AllDesktop,TVOS,Switch,Quail,Lumin    Protected $CompileMode ='Shipping'; // Debug, DebugGame, Development, Test, Shipping    Protected $CookFlavor = ''; // =Multi        Function _Init(Array $Args)    {      Parent::_Init($Args);      $this->Manager =$Args['Manager' ];      $this->Project =$Args['Project' ];      $this->Engine  =$Args['Engine'  ];    }        Function GetManager () { return $this->Manager ; }    Function GetEngine  () { return $this->Engine  ; }    Function GetProject () { return $this->Project ; }        Function GetOutputFolder() { return $this->OutputFolder; }        Function SetOutputFolder($v) { CreatePath($this->OutputFolder=Static::RealPath($v)); }    Function SetServer($v=true) { $this->Is_Server=$v; }    Function SetEngine($v) { if($v=$this->GetManager()->GetEngine($v)) $this->Engine=$v; }    Function SetPlatform($v, $f='') { $this->Platform=$v; if($f) $this->CookFlavor=$f;}    Function SetCompileMode(String $v)    {      switch($v)      {      case 'Shipping'    :      case 'Debug'       :      case 'DebugGame'   :      case 'Development' :      case 'Test'        :      case 'Shipping'    :        $this->CompileMode=$v;        break;      default:        $this->Log('Error', 'Unknown compile mode: ', $v);      }    }        Static Function IsAbsolute($Path)    {      return StrLen($Path)>1 &&(        SubStr($Path, 0, 1)=='/'   ||      //SubStr($Path, 0, 1)=='\\'  ||        SubStr($Path, 1, 1)==':'  // ||      //SubStr($Path, 1, 1)=='.\\' ||      //SubStr($Path, 0, 2)=='./'      );          }        Static Function RealPath($Path)    {      $Path=NormPath($Path);      if(!Static::IsAbsolute($Path))        $Path=NormPath(RealPath('./').'/'.$Path);      return $Path;    }    Protected $Op_Cook       =true  ;    Protected $Op_Build      =true  ;    Protected $Op_Stage      =true  ;    Protected $Is_Compressed =true  ;    Protected $Is_Server     =false ;    Function Start()    {      $Cmd=$this->GetEngine()->GetAutomationToolPath();      $Opts=[        'BuildCookRun',      ];      $Opts[]='-project="'.$this->GetProject()->GetFileProjectPath().'"';      $Opts[]='-noP4';      $Opts[]='-platform='     .$this->Platform;      $Opts[]='-targetplatform=' .$this->Platform;      $Opts[]='-clientconfig=' .$this->CompileMode;      $Opts[]='-serverconfig=' .$this->CompileMode;      if($this->CookFlavor    ) $Opts[]='-cookflavor='.$this->CookFlavor;      if($this->Op_Cook       ) $Opts[]='-cook';      if($this->Is_Compressed ) $Opts[]='-Compressed';      $Opts[]='-allmaps';      if($this->Op_Build  ) $Opts[]='-build'  ;      if($this->Op_Stage  ) $Opts[]='-stage'  ;      if($this->Is_Server ) $Opts[]='-server' ;      $Opts[]='-pak';      $Opts[]='-archive';      $Opts[]='-archivedirectory='.$this->GetOutputFolder();          //$Cmd=Implode(' ', $Opts);            $Res=[];      $Res[]='set Param=';      ForEach($Opts As $Opt)        $Res[]='set Param=%Param% '.$Opt;      $Res[]='call "'.$Cmd.'" %Param%';      $Res=Implode("\n", $Res);            $Cmd=$this->GetOutputFolder().'/Build.bat';      File_Put_Contents($Cmd, $Res);            $Exec=$this->Create_Object('/System/Exec');    //$Exec->Env=$_SERVER;          //$Exec->Env['TestEnv']='Hello World';          //echo $Cmd;    //return;      $Exec->Command=$Cmd;      $Exec->Execute();      $Exec->Done();    }        Function GetLogFiles()    {      $Path=$this->GetEngine()->GetPath();      $Path.='/Engine/Programs/AutomationTool/Saved/Logs/';      return [        $Path.'UBT-'.$this->GetProject()->GetName().'-'.$this->Platform.'-'.$this->CompileMode.'.txt',        $Path.'Log.txt',      ];    }        Function CopyLogs($To=False)    {      if($To===False)        $To=$this->GetOutputFolder();      ForEach($this->GetLogFiles() As $File)        Copy($File, $To.'/'.BaseName($File));    }  };  ?>
+<?
+  $Loader->Parent_Class('/Object');
+  $Loader->Load_Module('/FS/IOFS');
+  $Loader->Load_Lib('/FS/Utils');
+
+  class C_UE_Builder extends C_Object
+  {
+    Protected $Manager  ;
+    Protected $Project  ;
+    Protected $Engine   ;
+    // ERROR: The platform name WindowsNoEditor is not a valid platform name. Valid names are
+    Protected $Platform    ='Win64'; // Win32,Win64,HoloLens,Mac,XboxOne,PS4,IOS,Android,HTML5,Linux,AllDesktop,TVOS,Switch,Quail,Lumin
+    Protected $CompileMode ='Shipping'; // Debug, DebugGame, Development, Test, Shipping
+    Protected $CookFlavor  = ''; // =Multi
+    Protected $NeedSource  = false;
+    
+    Function _Init(Array $Args)
+    {
+      Parent::_Init($Args);
+      $this->Manager =$Args['Manager' ];
+      $this->Project =$Args['Project' ];
+      $this->Engine  =$Args['Engine'  ];
+    }
+    
+    Function GetManager () { return $this->Manager ; }
+  //Function GetEngine  () { return $this->NeedSource? $this->Engine->GetSource():$this->Engine; }
+    Function GetEngine  () { return ($Engine=$this->Engine)->GetSource()?? ($this->NeedSource? null:$Engine); }
+    Function GetProject () { return $this->Project ; }
+    
+    Function GetOutputFolder() { return $this->OutputFolder; }
+    
+    Function SetOutputFolder($v) { CreatePath($this->OutputFolder=Static::RealPath($v)); }
+    Function SetServer($v=true) { $this->Is_Server=$v; if($v) $this->NeedSource=true; }
+    Function SetEngine($v) { if($v=$this->GetManager()->GetEngine($v)) $this->Engine=$v; }
+    Function SetPlatform($v, $f='')
+    {
+      $this->Platform=$v; if($f) $this->CookFlavor=$f;
+      if($Platform!=='Win64')
+        $this->NeedSource=true;
+      if($Platform!=='Win64' || $Platform==='Shipping')
+      {
+        $this->Is_NoDebugInfo=false;
+      //$this->CrashReporter=true;
+      }
+    }
+    
+    Function SetCompileMode(String $v)
+    {
+      switch($v)
+      {
+      case 'Shipping'    :
+      case 'Debug'       :
+      case 'DebugGame'   :
+      case 'Development' :
+      case 'Test'        :
+      case 'Shipping'    :
+        $this->CompileMode=$v;
+        break;
+      default:
+        $this->Log('Error', 'Unknown compile mode: ', $v);
+      }
+    }
+    
+    Static Function IsAbsolute($Path)
+    {
+      return StrLen($Path)>1 &&(
+        SubStr($Path, 0, 1)=='/'   ||
+      //SubStr($Path, 0, 1)=='\\'  ||
+        SubStr($Path, 1, 1)==':'  // ||
+      //SubStr($Path, 1, 1)=='.\\' ||
+      //SubStr($Path, 0, 2)=='./'
+      );      
+    }
+    
+    Static Function RealPath($Path)
+    {
+      $Path=NormPath($Path);
+      if(!Static::IsAbsolute($Path))
+        $Path=NormPath(RealPath('./').'/'.$Path);
+      return $Path;
+    }
+
+    Protected $Op_Cook        =true  ;
+    Protected $Op_Compile     =true  ;
+    Protected $Op_Build       =true  ;
+    Protected $Op_Stage       =true  ;
+    Protected $Is_Compressed  =true  ;
+    Protected $Is_Server      =false ;
+    Protected $Is_PreReqs     =true  ;
+    Protected $Is_Package     =true  ;
+    Protected $StagingDir     =''    ;
+    Protected $Is_NoDebugInfo =false ;
+    Protected $Is_Utf8Output  =false ;
+    Protected $CrashReporter  =true  ;
+
+    Function Start()
+    {
+      $Cmd=$this->GetEngine()->GetAutomationToolPath();
+      $Opts=[
+        'BuildCookRun',
+      ];
+      $Opts[]='-project="'.$this->GetProject()->GetFile().'"';
+      $Opts[]='-noP4';
+      $Opts[]='-platform='       .$this->Platform;
+      $Opts[]='-targetplatform=' .$this->Platform;
+      $Opts[]='-clientconfig='   .$this->CompileMode;
+      $Opts[]='-serverconfig='   .$this->CompileMode;
+      if($this->CookFlavor     ) $Opts[]='-cookflavor='.$this->CookFlavor;
+      if($this->Op_Cook        ) $Opts[]='-cook'          ;
+      if($this->Is_Compressed  ) $Opts[]='-Compressed'    ;
+      $Opts[]='-allmaps';
+      if($this->Op_Build       ) $Opts[]='-build'         ;
+      if($this->Op_Compile     ) $Opts[]='-compile'       ;
+      if($this->Op_Stage       ) $Opts[]='-stage'         ;
+      if($this->Is_Server      ) $Opts[]='-server'        ;
+      if($this->Is_PreReqs     ) $Opts[]='-prereqs'       ;
+      if($this->Is_Package     ) $Opts[]='-package'       ;
+      if($this->Is_NoDebugInfo ) $Opts[]='-nodebuginfo'   ;
+      if($this->CrashReporter  ) $Opts[]='-crashreporter' ;
+      if($this->Is_Utf8Output  ) $Opts[]='-utf8output'    ;
+      $Opts[]='-pak';
+      $Opts[]='-archive';
+      $Opts[]='-archivedirectory='.$this->GetOutputFolder();
+      if($StagingDir=$this->StagingDir)
+        $Opts[]='-stagingdirectory='.$StagingDir;
+      
+    //$Cmd=Implode(' ', $Opts);
+      
+      $Res=[];
+      $Res[]='set Param=';
+      ForEach($Opts As $Opt)
+        $Res[]='set Param=%Param% '.$Opt;
+      $Res[]='call "'.$Cmd.'" %Param%';
+      $Res=Implode("\n", $Res);
+      
+      $Cmd=$this->GetOutputFolder().'/Build.bat';
+      File_Put_Contents($Cmd, $Res);
+      
+      $Exec=$this->Create_Object('/System/Exec');
+    //$Exec->Env=$_SERVER;
+      
+    //$Exec->Env['TestEnv']='Hello World';
+      
+    //echo $Cmd;
+    //return;
+      $Exec->Command=$Cmd;
+      $Exec->Execute();
+      $Exec->Done();
+    }
+    
+    Function _GetOutputDirBase()
+    {
+      switch($this->Platform)
+      {
+    # case 'Win32'      : return ['Windows' ,'NoEditor', 'Server'];
+      case 'Win64'      : return ['Windows' ,'NoEditor', 'Server'];
+    # case 'HoloLens'   :
+    # case 'Mac'        : return ['Mac'     ,'NoEditor', 'Server'];
+    # case 'XboxOne'    :
+    # case 'PS4'        :
+    # case 'IOS'        : return [$this->Platform.'_'.$this->CookFlavor, '', 'Server'];
+      case 'Android'    : return [$this->Platform.'_'.$this->CookFlavor, '', 'Server'];
+    # case 'HTML5'      :
+    # case 'Linux'      : return ['Linux'    ,'NoEditor', 'Server'];
+    # case 'AllDesktop' :
+    # case 'TVOS'       :
+    # case 'Switch'     :
+    # case 'Quail'      :
+    # case 'Lumin'      :
+      }
+      return ['Unknown', 'NoEditor', 'Server'];
+    }
+    
+    Function GetOutputDirClient()
+    {
+      [$Base, $Client, $Server]=$this->_GetOutputDirBase();
+      return $Res.$Client;
+    }
+    
+    Function GetOutputDirServer()
+    {
+      [$Base, $Client, $Server]=$this->_GetOutputDirBase();
+      return $Res.$Server;
+    }
+    
+    Function GetOutputDirs()
+    {
+      [$Base, $Client, $Server]=$this->_GetOutputDirBase();
+      $Res=[];
+      $Res[]=$Res.$Client;
+      if($this->Is_Server)
+        $Res[]=$Res.$Server;
+    }
+    
+    Function GetLogFiles()
+    {
+      $Path=$this->GetEngine()->GetPath();
+      $Path.='/Engine/Programs/AutomationTool/Saved/Logs/';
+      return [
+        $Path.'UBT-'.$this->GetProject()->GetName().'-'.$this->Platform.'-'.$this->CompileMode.'.txt',
+        $Path.'Log.txt',
+      ];
+    }
+    
+    Function CopyLogs($To=False)
+    {
+      if($To===False)
+        $To=$this->GetOutputFolder();
+      ForEach($this->GetLogFiles() As $File)
+        if(Is_File($File))
+          Copy($File, $To.'/'.BaseName($File));
+    }
+  };
+  
+?>

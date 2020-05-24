@@ -1,0 +1,35 @@
+<?
+  for($F=__FILE__; $F;) if(@include($F=DirName($F)).'/Using.php') break;
+  
+  $Reg=$Loader->Create_Object('/System/Reg');
+  $List=$Reg->SearchParam(
+    [
+      'HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall',
+      'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
+      'HKCU\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall',
+      'HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
+    ],
+    ['InstallLocation', 'DisplayName'], // 'InstallSource'
+    ['Recursive'=>true]
+  );
+  $Reg->Done();
+//$Reg->Debug($List);
+  $Res=[];
+  ForEach($List As $Item)
+  {
+    $InstallLocation =$Item['InstallLocation' ]??false;
+    $DisplayName     =$Item['DisplayName'     ]??false;
+    if(!$InstallLocation)
+      continue;
+    if($DisplayName!==false || !IsSet($Res[$InstallLocation]))
+      $Res[$InstallLocation]=$DisplayName;
+  }
+  ForEach($Res As $Path=>$Name)
+  //if(SubStr($Name, 0, 5)==='7-Zip')
+    if(Is_File($Path.'7z.exe'))
+    {
+      echo $Path, '7z.exe';
+      exit;
+    }
+  echo '7z'
+?>

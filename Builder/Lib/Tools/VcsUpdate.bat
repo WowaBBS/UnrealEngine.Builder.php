@@ -1,0 +1,1 @@
+call "%~dp0..\scripts\call_php.bat" "%~dp0VcsUpdate.php7"

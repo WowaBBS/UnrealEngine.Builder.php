@@ -1,0 +1,29 @@
+<?
+  for($F=__FILE__; $F;) if(@include($F=DirName($F)).'/Using.php') break;
+  
+  $FileProject  ??=''; //*.uproject';
+
+  $Mode='start';
+  
+  $bHelp  =false ;
+  ForEach($argv as $k=>$Arg)
+    switch($Mode)
+    {
+    case 'start': $Mode='arg'; break;
+    case 'arg':
+      Switch($Arg)
+      {
+      case '-FileProject'  : $Mode=$Arg; break;
+      default:
+        if($k>0)
+          $Loader->Log('Error', 'Arg ', $Arg, ' is unsupported');
+      }
+      break;
+    case '-FileProject'  : $FileProject  =$Arg; $Mode='arg'; break;
+    }
+
+  
+  $Manager=$Loader->Get_Singleton('/UE/Manager');
+  $Project=$Manager->OpenProject($FileProject);
+  echo $Project->GetName();
+?>

@@ -1,0 +1,58 @@
+<?
+  for($F=__FILE__; $F;) if(@include($F=DirName($F)).'/Using.php') break;
+  
+  $FileProject  ??=''; // ../ *.uproject';
+  $OutputFolder ??='Build';
+  $CompileMode  ??='Shipping';
+  $Platform     ??=''; //'Android';
+  $CookFlavor   ??=''; //'ETC2'
+  $Server       ??=false;
+
+  $Mode='start';
+  
+  $bHelp  =false ;
+  ForEach($argv as $k=>$Arg)
+    switch($Mode)
+    {
+    case 'start': $Mode='arg'; break;
+    case 'arg':
+      Switch($Arg)
+      {
+      case '-FileProject'  : $Mode=$Arg; break;
+      case '-OutputFolder' : $Mode=$Arg; break;
+      case '-CompileMode'  : $Mode=$Arg; break;
+      case '-Platform'     : $Mode=$Arg; break;
+      case '-CookFlavor'   : $Mode=$Arg; break;
+      
+      case '-Server'       : $Server=true; break;
+      default:
+        if($k>0)
+          $Loader->Log('Error', 'Arg ', $Arg, ' is unsupported');
+      }
+      break;
+    case '-FileProject'  : $FileProject  =$Arg; $Mode='arg'; break;
+    case '-OutputFolder' : $OutputFolder =$Arg; $Mode='arg'; break;
+    case '-CompileMode'  : $CompileMode  =$Arg; $Mode='arg'; break;
+    case '-Platform'     : $Platform     =$Arg; $Mode='arg'; break;
+    case '-CookFlavor'   : $CookFlavor   =$Arg; $Mode='arg'; break;
+  //case '-log'          : $LogFile      =$Arg; $Mode='arg'; break;
+    }
+
+  
+  $Manager=$Loader->Get_Singleton('/UE/Manager');
+  $Project=$Manager->OpenProject($FileProject);
+
+  $Engine =$Project->GetEngine();
+  echo 'Version: ', $Engine->GetVersionStr(), "\n";
+
+  $Builder=$Project->CreateBuilder();
+  $Builder->SetOutputFolder($OutputFolder);
+  $Builder->SetCompileMode($CompileMode);
+  if($Platform)
+    $Builder->SetPlatform($Platform, $CookFlavor);
+  if($Server)
+    $Builder->SetServer();
+//$Builder->SetEngine('{183191B6-480A-74E8-F0DD-8093791D85C4}');
+  $Builder->Start();
+  $Builder->CopyLogs();
+?>

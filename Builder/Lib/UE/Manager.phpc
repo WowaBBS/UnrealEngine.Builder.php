@@ -1,1 +1,54 @@
-<?  $Loader->Parent_Class('/Object');  class C_UE_Manager extends C_Object  {    Protected $Search  ;    Protected $Engines =[];        Function GetSearch()    {      return $this->Search ?? ($this->Srearch=$this->Get_Singleton('/UE/Search'));    }      Function OpenProject($FileProject)    {      return $this->Create_Object('/UE/Project', [        'Manager'     =>$this        ,        'FileProject' =>$FileProject ,      ]);    }        Function GetEngine($Version)    {      return $this->Engines[$Version] ?? $this->_GetEngine($Version);    }        Function _GetEngine($Version)    {      $Search=$this->GetSearch();      $List=$Search->GetList();      if(!IsSet($List[$Version]))        return null;            $Res=$this->Create_Object('/UE/Instance', [        'Manager' =>$this,        'Version' =>$Version,        'Path'    =>$List[$Version],      ]);      return $this->Engines[$Version]=$Res;    }  };  ?>
+<?
+  $Loader->Parent_Class('/Object');
+
+  class C_UE_Manager extends C_Object
+  {
+    Protected $Search  ;
+    Protected $Engines =[];
+    
+    Function GetSearch()
+    {
+      return $this->Search ?? ($this->Srearch=$this->Get_Singleton('/UE/Search'));
+    }
+  
+    Function OpenProject($FileProject)
+    {
+      return $this->Create_Object('/UE/Project', [
+        'Manager' =>$this        ,
+        'File'    =>$FileProject ,
+      ]);
+    }
+    
+    Function GetEngine($Version)
+    {
+      return $this->Engines[$Version] ??= $this->_GetEngine($Version);
+    }
+    
+    Function GetEngines() { return $this->Engines ?: $this->LoadEngines(); }
+    
+    Function LoadEngines()
+    {
+      $Search=$this->GetSearch();
+      $List=$Search->GetList();
+      $Res=[];
+      ForEach($List As $Version=>$Info)
+        $Res[$Version]=$this->Create_Object('/UE/Instance', [
+          'Manager' =>$this,
+          'Version' =>$Version,
+        ]+$Info);
+      ForEach($Res As $Item)
+        if($Item->IsSource())
+          if($To=$Res[$Item->GetVersionStr()])
+            $To->SetSource($Item);
+      $this->Engines=$Res;
+      return $Res;
+    }
+    
+    Function _GetEngine($Version)
+    {
+      $List=$this->LoadEngines();
+      return $List[$Version]?? false;
+    }
+  };
+  
+?>

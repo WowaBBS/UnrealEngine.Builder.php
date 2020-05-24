@@ -1,0 +1,50 @@
+<?
+  $Loader->Parent_Class('/Object');
+
+  class C_UE_Vcs extends C_Object
+  {
+    Protected String $Exec='svn' ;
+    Protected String $Path='./'  ;
+    Protected ?Array $Info=null  ;
+  
+    Function _Init(Array $Args)
+    {
+      parent::_Init($Args);
+      $this->Exec=$Args['Exec'];
+      $this->Path=$Args['Path'];
+    }
+    
+    Function InvalidateInfo() { $this->Info=null; }
+    Function GetInfo() { return $this->Info??=$this->_GetInfo(); }
+    Function _GetInfo()
+    {
+      $Out  =[];
+      $Code =0;
+      Exec($this->Exec.' info "'.$this->Path.'" 2>nul', $Out, $Code);
+    //$this->Log('Log', 'Code=', $Code);
+      if($Code!==0)
+        return [];
+    //$RevisionStart='Revision: ';
+      $Res=[];
+      ForEach($Out As $Line)
+      {
+        $Line=Explode(':', $Line, 2);
+        if(Count($Line)<2)
+          continue;
+        [$k, $v]=$Line;
+        $Res[Trim($k)]=Trim($v);
+      //echo $Line, "\n";
+      }
+      return $Res;
+    }
+    
+    Function GetRevision() { return $this->GetInfo()['Revision']?? ''; }
+
+    Function Update()
+    {
+      System($this->Exec.' update "'.$this->Path.'" --accept tf');
+      System($this->Exec.' resolve "'.$this->Path.'" --accept theirs-full');
+      $this->InvalidateInfo();
+    }
+  };
+?>
