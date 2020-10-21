@@ -13,12 +13,7 @@
     Var $Contents =[];
     Var $Assets   =null;
     Var $Required =[];
-    
-    Var $Cache_Assets_Dir  ='Assets';
-    Var $Cache_MD5_File    ='Cache/md5.php';
-    Var $Cache_Info_File   ='Cache/info.php';
-    Var $Asset_Content_Dir ='../Content';
-    Var $Asset_Save_Dir    ='Save';
+    Var $Project  =null;
     
     Var $Cache_Manager =null;
     Var $Cache_Assets  ;
@@ -29,27 +24,99 @@
     {
       Parent::_Init($Args);
 
-      $this->Log      =$this->Create_Object('/UE/Deps/Log'     ,$Args['Log'     ]??[]);
-      $this->Content  =$this->Create_Object('/UE/Deps/Content' ,$Args['Content' ]??[]);
-      $this->Save     =$this->Create_Object('/UE/Deps/Content' ,$Args['Save'    ]??[]);
-      $this->Assets   =$this->Create_Object('/UE/Deps/Assets'  ,$Args['Assets'  ]??[]);
+      $this->Project  =$Project=$Args['Project']?? $this->Get_Singleton('/UE/Manager')->OpenProject('');
+      If(!$Project)
+        Return;
+
+      $ProjectPath =$Project->GetPath();
+      $BuilderPath =$ProjectPath.'Builder/';
+      $LogPath     =$ProjectPath.'Builder/Log/';
+
+      $this->Log      =$this->Create_Object('/UE/Deps/Log'     ,($Args['Log'     ]??[])+['Dir'=>$LogPath]);
+      $this->Content  =$this->Create_Object('/UE/Deps/Content' , $Args['Content' ]??[]);
+      $this->Save     =$this->Create_Object('/UE/Deps/Content' , $Args['Save'    ]??[]);
+      $this->Assets   =$this->Create_Object('/UE/Deps/Assets'  , $Args['Assets'  ]??[]);
       
       $this->Assets->UE=$this;
-      
-      $this->Cache_Manager=$CM=$this->Create_Object('/Cache/Manager');
-      $this->Cache_MD5    =$CM->GetMapFile ($this->Cache_MD5_File   ); // GetMD5Enum($this->Cache_MD5_File);
-      $this->Cache_Info   =$CM->GetMapFile ($this->Cache_Info_File  );
-      $this->Cache_Assets =$CM->GetMapDir  ($this->Cache_Assets_Dir );
-      $this->Required     =new T_FS_Param   ();
-      $this->Required->Append($Args['Required']??[]);
-      
-      $this->Required->Def=~0;
       
       // Init
     //$this->Assign($Args[0] ?? $Args['Request']);
 
-      $this->Content ->Init($this, $this->Asset_Content_Dir ,'/Game');
-      $this->Save    ->Init($this, $this->Asset_Save_Dir    ,'', true);
+      $Cache_Assets_Dir  ='Assets';
+      $Cache_MD5_File    ='Cache/md5.php';
+      $Cache_Info_File   ='Cache/info.php';
+      $Cache_Path        =$BuilderPath.'.cache/';
+  
+      $this->Cache_Manager =$CM=$this->Create_Object('/Cache/Manager', ['FillPath'=>$Cache_Path]);
+      $this->Cache_Manager ->FullPath=$Cache_Path; //<TODO: Remove, it is a workaround of buf of /Cache/Manager
+      $this->Cache_MD5     =$CM->GetMapFile ($Cache_MD5_File   ); // GetMD5Enum($this->Cache_MD5_File);
+      $this->Cache_Info    =$CM->GetMapFile ($Cache_Info_File  );
+      $this->Cache_Assets  =$CM->GetMapDir  ($Cache_Assets_Dir );
+      $this->Cache_Assets  ->DirPath=$Cache_Path.'Assets'; //<TODO: Remove, it is a workaround of buf of GetMapDir
+      $this->Required      =new T_FS_Param   ();
+      $this->Required->Append(($Args['Required']??[])+$this->LoadDependsFromConfig());
+      
+      $this->Required->Def=~0;
+      
+      // TODO: Add Content filders of plugins and engine
+      $this->Content ->Init($this, $ProjectPath.'Content' ,'/Game');
+      $this->Save    ->Init($this, $BuilderPath.'Save' ,'', true);
+    }
+    
+    Function LoadDependsFromConfig()
+    {
+      $ProjectPath=$this->Project->GetPath();
+      $ConfigPath  =$ProjectPath.'Config/'  ;
+      $ContentPath =$ProjectPath.'Content/' ;
+      $List=Glob($ConfigPath.'*.ini', GLOB_NOSORT);
+      $Res=[];
+      ForEach($List As $File)
+      {
+        $Ini=File_Get_Contents($File);
+        $Ini=Explode("\n", $Ini);
+        ForEach($Ini As $Line)
+        {
+          $Line=Trim($Line);
+          if($Line   ===''  ) continue;
+          if($Line[0]==='[' ) continue;
+          $Line=Explode('=', $Line, 2);
+          if(!IsSet($Line[1])) continue;
+          $Line=$Line[1];
+          $Line=Trim($Line);
+          if($Line   ===''  ) continue;
+          if(SubStr($Line, 0, 6)==='/Game/') // TODO: Add plugins and engine content
+            $Res[$Line]=$Line;
+          if($Line[0]==='(')
+          {
+          //If(Preg_Match_All('/\'"\\.*?"\'/i', $Line, $Matches))
+            If(Preg_Match_All('/\'"(\\/Game\\/[^"]*?)"\'/i', $Line, $Matches))
+            {
+              $Matches=$Matches[1];
+              ForEach($Matches As $Match)
+                $Res[$Match]=$Match;
+            }
+          }
+        }
+      }
+      $List=Array_Values($Res);
+      $Res=[];
+      ForEach($List As $Item)
+      {
+        if(($Pos=StrPos($Item, '.'))!==False)
+          $Item=SubStr($Item, 0, $Pos);
+        $Res[StrToLower($Item)]=$Item;
+      }
+      $List=Array_Values($Res);
+      $Res=[];
+      ForEach($List As $Item)
+        if(SubStr($Item, 0, 6)==='/Game/') // TODO: Add plugins and engine content
+        {
+          $File=SubStr($Item, 6); // TODO: Check in save foledr
+          if(Is_File($ContentPath.$File.'.uasset' )) $Res[$Item.'.uasset' ]=1; else
+          if(Is_File($ContentPath.$File.'.umap'   )) $Res[$Item.'.umap'   ]=1; else
+            $this->Log('Error', 'Not found ', $Item);
+        }
+      return $Res;
     }
    
     Function _Done()

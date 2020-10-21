@@ -43,6 +43,11 @@
       $this->Name=BaseName ($File, '.uproject');
       $this->Path=DirName  ($File).'/';
     }
+    
+    Function GetDepends($Args=[])
+    {
+      return $this->Create_Object('/UE/Deps/Manager', ['Project'=>$this]+$Args);
+    }
 
     Function GetName    () { return $this->Name    ; }
     Function GetManager () { return $this->Manager ; }

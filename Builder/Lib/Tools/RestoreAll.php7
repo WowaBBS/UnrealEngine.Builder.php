@@ -1,0 +1,32 @@
+<?
+  for($F=__FILE__; $F;) if(@include($F=DirName($F)).'/Using.php') break;
+  
+  $Manager=$Loader->Get_Singleton('/UE/Manager');
+  $Project=$Manager->OpenProject($FileProject?? '');
+  $ProjectPath=$Project->GetPath();
+//$Loader->GetLogger()->AddFile($ProjectPath.'Builder/Log/RestoreAll.log');
+  $Loader->GetLogger()->AddNewFile($ProjectPath.'Builder/Log/RestoreAll');
+  $Files=[
+    'Build/IOS/AuroraMobile.PackageVersionCounter',
+    'Config/DefaultEngine.ini',
+  ];
+  ForEach($Files As $File)
+  {
+    $File=$ProjectPath.$File;
+    $Save=$File.'.save';
+    If(!Is_File($Save))
+      Continue;
+    $Content=File_Get_Contents($Save);
+    File_Put_Contents($File, $Content);
+    UnLink($Save);
+  }
+
+  $Manager=$Loader->Get_Singleton('/UE/Manager');
+  $Project=$Manager->OpenProject($FileProject?? '');
+  $Depends=$Project->GetDepends();
+  $Depends->LoadAssets();
+//$Depends->Check_Dependances();
+  $Depends->RestoreSaved();
+  $Depends->Done();
+  UnSet($Depends);
+?>

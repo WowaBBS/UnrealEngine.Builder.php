@@ -3,14 +3,22 @@
   
   class C_UE_Deps_Log_Base Extends C_Object
   {
-    Var $Dir='Log';
+    Var $Dir='Log/';
   
-    Function _Save($LogName, $Data)
+    Protected Function _Init(Array $Args)
+    {
+      Parent::_Init($Args);
+
+      $this->Dir=$Args['Dir']?? $this->Dir; // TODO: Remove, use Path
+    }
+    
+    Function _Save($LogName, $Data) // TODO: Remove arg $LogName, use Path; Implode($Data)
     {
       $Dir=$this->Dir;
       if(!Is_Dir($Dir))
         CreatePath($Dir);
-      $FileLog=$Dir.'/'.$LogName.'.log';
+      $FileLog=$Dir.$LogName.'.log';
+      $this->Debug($FileLog);
       File_Put_Contents($FileLog, $Data);
     }
     

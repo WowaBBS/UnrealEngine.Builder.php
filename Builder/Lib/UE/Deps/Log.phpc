@@ -9,6 +9,7 @@
  
   class C_UE_Deps_Log extends C_Object
   {
+    Var $Dir        ='Log/';
     Var $Undepend   =null;
     Var $DependCase =null;
     Var $Numerated  =null;
@@ -21,15 +22,18 @@
     Function ClassLink  ($FromPath, $Class)  { $this->ClassLink  ->Add($FromPath, $Class)  ; }
     Function BadName    ($Path)              { $this->BadName    ->Add($Path)              ; }
     
+  
     Protected Function _Init(Array $Args)
     {
       Parent::_Init($Args);
 
-      $this->Undepend   = $this->Create_Object('/UE/Deps/Log/Undepend'   ,$Args['Undepend'   ]??[]);
-      $this->DependCase = $this->Create_Object('/UE/Deps/Log/DependCase' ,$Args['DependCase' ]??[]);
-      $this->Numerated  = $this->Create_Object('/UE/Deps/Log/Numerated'  ,$Args['Numerated'  ]??[]);
-      $this->ClassLink  = $this->Create_Object('/UE/Deps/Log/ClassLink'  ,$Args['ClassLink'  ]??[]);
-      $this->BadName    = $this->Create_Object('/UE/Deps/Log/BadName'    ,$Args['BadName'    ]??[]);
+      $this->Dir=$Args['Dir']?? $this->Dir;
+      $LogArgs=['Dir'=>$this->Dir];
+      $this->Undepend   = $this->Create_Object('/UE/Deps/Log/Undepend'   ,($Args['Undepend'   ]??[])+$LogArgs);
+      $this->DependCase = $this->Create_Object('/UE/Deps/Log/DependCase' ,($Args['DependCase' ]??[])+$LogArgs);
+      $this->Numerated  = $this->Create_Object('/UE/Deps/Log/Numerated'  ,($Args['Numerated'  ]??[])+$LogArgs);
+      $this->ClassLink  = $this->Create_Object('/UE/Deps/Log/ClassLink'  ,($Args['ClassLink'  ]??[])+$LogArgs);
+      $this->BadName    = $this->Create_Object('/UE/Deps/Log/BadName'    ,($Args['BadName'    ]??[])+$LogArgs);
     }
     
     Function _Done()

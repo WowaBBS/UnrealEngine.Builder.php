@@ -1,0 +1,29 @@
+<?
+  for($F=__FILE__; $F;) if(@include($F=DirName($F)).'/Using.php') break;
+  ini_set('memory_limit', '2G');
+  
+  $Manager=$Loader->Get_Singleton('/UE/Manager');
+  $Project=$Manager->OpenProject($FileProject?? '');
+  
+  $ProjectPath=$Project->GetPath();
+//$Loader->GetLogger()->AddFile($ProjectPath.'Builder/Log/PrepareDepends.log');
+  $Loader->GetLogger()->AddNewFile($ProjectPath.'Builder/Log/PrepareDepends');
+  $Required=[];
+  Include $ProjectPath.'Builder/Config/Dependances.php';
+  $DependsConfigName=$argv[1]?? 'Full';
+  $DependsConfigPath=$ProjectPath.'Builder/Config/Depends_'.$DependsConfigName.'.php';
+  If(Is_File($DependsConfigPath))
+    Include($DependsConfigPath);
+  $Depends=$Project->GetDepends([
+    'Required'=>$Required_Config+($Required??[]),
+    'Log'=>['Numerated'=>['Exclude'=>$Log_Numerated_Exclude]],
+  ]);
+  $Depends->LoadAssets();
+  $Depends->Check_Dependances();
+  $Depends->SaveUndepended();
+  $Depends->Done();
+  UnSet($Depends);
+  
+  $Loader->Done();
+  UnSet($Loader);
+?>

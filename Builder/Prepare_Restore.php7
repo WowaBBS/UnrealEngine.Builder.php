@@ -1,1 +1,0 @@
-<?  Require_Once 'Lib/Using.php';  ini_set('memory_limit', '2G');  //$Loader->GetLogger()->AddFile('Prepare_Restore.log');  $Loader->GetLogger()->AddNewFile('Prepare_Restore.log');    $UE=$Loader->Create_Object('/UE/Deps/Manager');  $UE->LoadAssets();//$UE->Check_Dependances();  $UE->RestoreSaved();  $UE->Done();  UnSet($UE);    $Loader->Done();  UnSet($Loader);?>
