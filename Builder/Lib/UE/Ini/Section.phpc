@@ -1,0 +1,8 @@
+<?
+  $Loader->Parent_Class('/Object');
+
+  class C_UE_Ini_Section extends C_Object
+  {
+  };
+  
+?>

@@ -1,0 +1,10 @@
+<?
+  $Loader->Parent_Class('/Object');
+//$Loader->Load_Module('/FS/IOFS');
+//$Loader->Load_Lib('/FS/Utils');
+
+  class C_UE_Ini_File extends C_Object
+  {
+  };
+  
+?>
