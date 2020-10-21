@@ -30,7 +30,7 @@
     Function GetOutputFolder() { return $this->OutputFolder; }
     
     Function SetOutputFolder($v) { CreatePath($this->OutputFolder=Static::RealPath($v)); }
-    Function SetServer($v=true) { $this->Is_Server=$v; if($v) $this->NeedSource=true; }
+    Function SetServer($v=true) { $this->Is_Server=$v; $this->No_Client=$v; if($v) $this->NeedSource=true; }
     Function SetEngine($v) { if($v=$this->GetManager()->GetEngine($v)) $this->Engine=$v; }
     Function SetPlatform($v, $f='')
     {
@@ -80,18 +80,20 @@
       return $Path;
     }
 
-    Protected $Op_Cook        =true  ;
-    Protected $Op_Compile     =true  ;
-    Protected $Op_Build       =true  ;
-    Protected $Op_Stage       =true  ;
-    Protected $Is_Compressed  =true  ;
-    Protected $Is_Server      =false ;
-    Protected $Is_PreReqs     =true  ;
-    Protected $Is_Package     =true  ;
-    Protected $StagingDir     =''    ;
-    Protected $Is_NoDebugInfo =false ;
-    Protected $Is_Utf8Output  =false ;
-    Protected $CrashReporter  =true  ;
+    Protected $Op_Cook         =true  ;
+    Protected $Op_Compile      =true  ;
+    Protected $Op_Build        =true  ;
+    Protected $Op_Stage        =true  ;
+    Protected $Is_Compressed   =true  ;
+    Protected $Is_Server       =false ;
+    Protected $No_Client       =false ;
+    Protected $Is_PreReqs      =true  ;
+    Protected $Is_Package      =true  ;
+    Protected $Is_Distribution =true  ;
+    Protected $StagingDir      =''    ;
+    Protected $Is_NoDebugInfo  =false ;
+    Protected $Is_Utf8Output   =false ;
+    Protected $CrashReporter   =true  ;
 
     Function Start()
     {
@@ -105,19 +107,21 @@
       $Opts[]='-targetplatform=' .$this->Platform;
       $Opts[]='-clientconfig='   .$this->CompileMode;
       $Opts[]='-serverconfig='   .$this->CompileMode;
-      if($this->CookFlavor     ) $Opts[]='-cookflavor='.$this->CookFlavor;
-      if($this->Op_Cook        ) $Opts[]='-cook'          ;
-      if($this->Is_Compressed  ) $Opts[]='-Compressed'    ;
+      if($this->CookFlavor      ) $Opts[]='-cookflavor='.$this->CookFlavor;
+      if($this->Op_Cook         ) $Opts[]='-cook'          ;
+      if($this->Is_Compressed   ) $Opts[]='-Compressed'    ;
       $Opts[]='-allmaps';
-      if($this->Op_Build       ) $Opts[]='-build'         ;
-      if($this->Op_Compile     ) $Opts[]='-compile'       ;
-      if($this->Op_Stage       ) $Opts[]='-stage'         ;
-      if($this->Is_Server      ) $Opts[]='-server'        ;
-      if($this->Is_PreReqs     ) $Opts[]='-prereqs'       ;
-      if($this->Is_Package     ) $Opts[]='-package'       ;
-      if($this->Is_NoDebugInfo ) $Opts[]='-nodebuginfo'   ;
-      if($this->CrashReporter  ) $Opts[]='-crashreporter' ;
-      if($this->Is_Utf8Output  ) $Opts[]='-utf8output'    ;
+      if($this->Op_Build        ) $Opts[]='-build'         ;
+      if($this->Op_Compile      ) $Opts[]='-compile'       ;
+      if($this->Op_Stage        ) $Opts[]='-stage'         ;
+      if($this->Is_Server       ) $Opts[]='-server'        ;
+      if($this->No_Client       ) $Opts[]='-noclient'      ;
+      if($this->Is_PreReqs      ) $Opts[]='-prereqs'       ;
+      if($this->Is_Package      ) $Opts[]='-package'       ;
+      if($this->Is_NoDebugInfo  ) $Opts[]='-nodebuginfo'   ;
+      if($this->CrashReporter   ) $Opts[]='-crashreporter' ;
+      if($this->Is_Utf8Output   ) $Opts[]='-utf8output'    ;
+      if($this->Is_Distribution ) $Opts[]='-distribution'  ;
       $Opts[]='-pak';
       $Opts[]='-archive';
       $Opts[]='-archivedirectory='.$this->GetOutputFolder();
