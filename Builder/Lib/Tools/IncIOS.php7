@@ -1,0 +1,45 @@
+<?
+  for($F=__FILE__; $F;) if(@include($F=DirName($F)).'/Using.php') break;
+  
+  $Inc=$argv[1]?? 1;
+  
+  $Manager=$Loader->Get_Singleton('/UE/Manager');
+  $Project=$Manager->OpenProject($FileProject?? '');
+  
+  include($Project->GetPath().'Builder/Config/Counter.php');
+  
+  $CounterFile=$Project->GetPath().'Build/IOS/AuroraMobile.PackageVersionCounter';
+  if(Is_File($CounterFile))
+  {
+    $Content=File_Get_Contents($CounterFile);
+    if(!Is_File($CounterFile.'.save'))
+      File_Put_Contents($CounterFile.'.save', $Content);
+    $Counter=Explode('.', $Content, 2);
+  }
+  else
+  {
+    $Counter=[0,0];
+  }
+  $Prev=$Counter[1];
+  While(True)
+  {
+    $Next=File_Get_Contents($CounterUrl.'?Key='.$Project->GetName().'/IOS&If='.$Prev.'&Min='.$Counter[1]);
+    if($Next[0]==='#')
+    {
+      $Prev=SubStr($Next, 1);
+      Continue;
+    }
+    If(StrLen($Next)===0 || (String)(Int)$Next!==$Next)
+    {
+      Echo 'Error: ', $Next;
+      Return;
+    }
+    Break;
+  }
+  
+  $Counter[1]=$Next;
+  $Content=Implode('.', $Counter);
+  File_Put_Contents($CounterFile, $Content);
+  
+  echo 'IOs.Counter=', $Content;
+?>
