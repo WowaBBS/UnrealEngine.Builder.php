@@ -31,5 +31,19 @@
       echo $Path, '7z.exe';
       exit;
     }
-  echo '7z'
+  $Envs=[
+    'PROGRAMFILES'      ,
+    'PROGRAMFILES(X86)' ,
+    'PROGRAMW6432'      ,
+  ];
+  ForEach($Envs As $EnvName)
+  {
+    $Path=GetEnv($EnvName);
+    if(Is_File($Path.'/7-Zip/7z.exe'))
+    {
+      echo $Path, '/7-Zip/7z.exe';
+      exit;
+    }
+  }
+  echo '7z';
 ?>
