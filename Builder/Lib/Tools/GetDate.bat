@@ -7,7 +7,7 @@ if "%Now_Format%"=="" set Now_Format=Y-m-d H:i:s
 if "%Now_Time%"=="" set Now_Format=now
 ::echo Now_Var    =%Now_Var%
 ::echo Now_Format =%Now_Format%
-For /F "Delims=" %%I In ('call "%~dp0..\scripts\call_php.bat" "%~dp0GetDate.php7" "%Now_Format%" "%Now_Time%"') Do Set %Now_Var%=%%~I
+For /F "Delims=" %%I In ('%Call_Php% "%~dp0GetDate.php7" "%Now_Format%" "%Now_Time%"') Do Set %Now_Var%=%%~I
 setlocal enableDelayedExpansion
 echo %Now_Var%=!%Now_Var%!
 endlocal

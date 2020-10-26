@@ -1,2 +1,2 @@
-
-call "%~dp0..\Scripts\Call_Php.bat" "%~dp0RestoreAll.php7" %*
+@echo off
+%Call_Php% "%~dp0RestoreAll.php7" %*

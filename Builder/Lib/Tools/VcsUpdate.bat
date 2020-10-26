@@ -1,1 +1,1 @@
-call "%~dp0..\scripts\call_php.bat" "%~dp0VcsUpdate.php7"
+%Call_Php% "%~dp0VcsUpdate.php7"

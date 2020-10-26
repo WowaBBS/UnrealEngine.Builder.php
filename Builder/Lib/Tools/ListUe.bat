@@ -1,2 +1,2 @@
 
-call "%~dp0..\Scripts\Call_Php.bat" "%~dp0ListUe.php7" %*
+%Call_Php% "%~dp0ListUe.php7" %*

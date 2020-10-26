@@ -1,5 +1,5 @@
 <?
-  for($F=__FILE__; $F;) if(@include($F=DirName($F)).'/Using.php') break;
+  for($F=GetEnv('WLib_Using')?:__FILE__; $F;) if(@include($F=DirName($F)).'/Using.php') break;
   
   $Inc=$argv[1]?? 3;
   $ConfigSave=True;
