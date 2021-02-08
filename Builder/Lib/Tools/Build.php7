@@ -7,6 +7,7 @@
   $Platform     ??=''; //'Android';
   $CookFlavor   ??=''; //'ETC2'
   $Server       ??=false;
+  $NoDebugInfo  ??=null;
 
   $Mode='start';
   
@@ -24,7 +25,9 @@
       case '-Platform'     : $Mode=$Arg; break;
       case '-CookFlavor'   : $Mode=$Arg; break;
       
-      case '-Server'       : $Server=true; break;
+      case '-Server'       : $Server      =true; break;
+      case '-NoDebugInfo'  : $NoDebugInfo =true; break;
+      case '-DebugInfo'    : $DebugInfo   =true; break;
       default:
         if($k>0)
           $Loader->Log('Error', 'Arg ', $Arg, ' is unsupported');
@@ -52,6 +55,8 @@
     $Builder->SetPlatform($Platform, $CookFlavor);
   if($Server)
     $Builder->SetServer();
+  if($NoDebugInfo!==Null)
+    $Builder->Is_NoDebugInfo=$NoDebugInfo;
 //$Builder->SetEngine('{183191B6-480A-74E8-F0DD-8093791D85C4}');
   $Builder->Start();
   $Builder->CopyLogs();
