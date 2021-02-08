@@ -39,10 +39,12 @@
         $this->NeedSource=true;
       if($Platform!=='Win64' || $Platform==='Shipping')
       {
-        $this->Is_NoDebugInfo=false;
+      //$this->Is_NoDebugInfo=false;
       //$this->CrashReporter=true;
       }
     }
+    
+    Function SetNoDebugInfo($v=true) { $this->Is_NoDebugInfo=$v; }
     
     Function SetCompileMode(String $v)
     {

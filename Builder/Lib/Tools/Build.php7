@@ -56,7 +56,7 @@
   if($Server)
     $Builder->SetServer();
   if($NoDebugInfo!==Null)
-    $Builder->Is_NoDebugInfo=$NoDebugInfo;
+    $Builder->SetNoDebugInfo($NoDebugInfo);
 //$Builder->SetEngine('{183191B6-480A-74E8-F0DD-8093791D85C4}');
   $Builder->Start();
   $Builder->CopyLogs();
