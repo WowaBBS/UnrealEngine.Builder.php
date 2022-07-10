@@ -38,7 +38,7 @@
         ]+$Info);
       ForEach($Res As $Item)
         if($Item->IsSource())
-          if($To=$Res[$Item->GetVersionStr()])
+          if($To=$Res[$Item->GetVersionStr()]?? Null)
             $To->SetSource($Item);
       $this->Engines=$Res;
       return $Res;

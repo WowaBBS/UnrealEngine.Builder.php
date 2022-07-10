@@ -32,9 +32,10 @@
     Function SetOutputFolder($v) { CreatePath($this->OutputFolder=Static::RealPath($v)); }
     Function SetServer($v=true) { $this->Is_Server=$v; $this->No_Client=$v; if($v) $this->NeedSource=true; }
     Function SetEngine($v) { if($v=$this->GetManager()->GetEngine($v)) $this->Engine=$v; }
-    Function SetPlatform($v, $f='')
+    Function SetPlatform($Platform, $f='')
     {
-      $this->Platform=$v; if($f) $this->CookFlavor=$f;
+    //$this->Log('Debug', 'SetPlatform(', $Platform, ', ', $f,')');
+      $this->Platform=$Platform; if($f) $this->CookFlavor=$f;
       if($Platform!=='Win64')
         $this->NeedSource=true;
       if($Platform!=='Win64' || $Platform==='Shipping')
@@ -96,10 +97,18 @@
     Protected $Is_NoDebugInfo  =false ;
     Protected $Is_Utf8Output   =false ;
     Protected $CrashReporter   =true  ;
+    Protected $AddArgs         =[];
 
+    Function SetAddArgs($v) { $this->AddArgs=$v; }
+    
     Function Start()
     {
-      $Cmd=$this->GetEngine()->GetAutomationToolPath();
+    //$this->Log('Debug', 'Platform='   ,$this->Platform   );
+    //$this->Log('Debug', 'NeedSource=' ,$this->NeedSource );
+      $Engine=$this->GetEngine();
+      if(!$Engine->IsSource())
+        $this->Op_Compile=False;
+      $Cmd=$Engine->GetAutomationToolPath();
       $Opts=[
         'BuildCookRun',
       ];
@@ -112,7 +121,7 @@
       if($this->CookFlavor      ) $Opts[]='-cookflavor='.$this->CookFlavor;
       if($this->Op_Cook         ) $Opts[]='-cook'          ;
       if($this->Is_Compressed   ) $Opts[]='-Compressed'    ;
-      $Opts[]='-allmaps';
+                                  $Opts[]='-allmaps'       ; //<TODO: Optional? Remove?
       if($this->Op_Build        ) $Opts[]='-build'         ;
       if($this->Op_Compile      ) $Opts[]='-compile'       ;
       if($this->Op_Stage        ) $Opts[]='-stage'         ;
@@ -127,9 +136,17 @@
       $Opts[]='-pak';
       $Opts[]='-archive';
       $Opts[]='-archivedirectory='.$this->GetOutputFolder();
+
+    # if($this->Manifests             ) $Opts[]='-manifests'          ;
+    # if($this->CreateChunkInstall    ) $Opts[]='-createchunkinstall' ;
+    # if($this->ChunkInstallDirectory ) $Opts[]='-chunkinstalldirectory=' .$this->ChunkInstallDirectory ;
+    # If($this->ChunkInstallVersion   ) $Opts[]='-chunkinstallversion='   .$this->ChunkInstallVersion   ;
+
       if($StagingDir=$this->StagingDir)
         $Opts[]='-stagingdirectory='.$StagingDir;
       
+      ForEach($this->AddArgs As $Arg)
+        $Opts[]=$Arg;
     //$Cmd=Implode(' ', $Opts);
       
       $Res=[];
@@ -147,7 +164,7 @@
       
     //$Exec->Env['TestEnv']='Hello World';
       
-    //echo $Cmd;
+    //$this->Log('Debug', 'Cmd: ',$Cmd);
     //return;
       $Exec->Command=$Cmd;
       $Exec->Execute();

@@ -8,12 +8,13 @@
   $CookFlavor   ??=''; //'ETC2'
   $Server       ??=false;
   $NoDebugInfo  ??=null;
+  $AddArgs      ??=[];
 
   $Mode='start';
   
-  $bHelp  =false ;
-  ForEach($argv as $k=>$Arg)
-    switch($Mode)
+  $bHelp=false ;
+  ForEach($argv As $k=>$Arg)
+    Switch($Mode)
     {
     case 'start': $Mode='arg'; break;
     case 'arg':
@@ -24,6 +25,7 @@
       case '-CompileMode'  : $Mode=$Arg; break;
       case '-Platform'     : $Mode=$Arg; break;
       case '-CookFlavor'   : $Mode=$Arg; break;
+      case '--'            : $Mode=$Arg; break;
       
       case '-Server'       : $Server      =true; break;
       case '-NoDebugInfo'  : $NoDebugInfo =true; break;
@@ -39,6 +41,7 @@
     case '-Platform'     : $Platform     =$Arg; $Mode='arg'; break;
     case '-CookFlavor'   : $CookFlavor   =$Arg; $Mode='arg'; break;
   //case '-log'          : $LogFile      =$Arg; $Mode='arg'; break;
+    case '--'            : $AddArgs    []=$Arg; break;
     }
 
   
@@ -58,6 +61,7 @@
   if($NoDebugInfo!==Null)
     $Builder->SetNoDebugInfo($NoDebugInfo);
 //$Builder->SetEngine('{183191B6-480A-74E8-F0DD-8093791D85C4}');
+  $Builder->SetAddArgs($AddArgs);
   $Builder->Start();
   $Builder->CopyLogs();
 ?>
