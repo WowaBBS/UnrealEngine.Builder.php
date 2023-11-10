@@ -49,7 +49,10 @@
   $Project=$Manager->OpenProject($FileProject);
 
   $Engine =$Project->GetEngine();
-  echo 'Version: ', $Engine->GetVersionStr(), "\n";
+  If($Engine)
+    echo 'Version: ', $Engine->GetVersionStr(), "\n";
+  Else
+    echo "The engine is not found\n";
 
   $Builder=$Project->CreateBuilder();
   $Builder->SetOutputFolder($OutputFolder);

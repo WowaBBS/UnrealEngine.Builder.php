@@ -43,16 +43,22 @@
           $List[$Key]=$Value;
     
       $LauncherInstalled_File=Static::ApplicationSettingsDir().'/UnrealEngineLauncher/LauncherInstalled.dat';
-      $LauncherInstalled_Data=File_Get_Contents($LauncherInstalled_File);
-      $LauncherInstalled=Json_DeCode($LauncherInstalled_Data, true);
-      ForEach($LauncherInstalled['InstallationList'] As $Item)
+      
+      If(!Is_File($LauncherInstalled_File))
+        $this->Cache=$this->Log('Error', 'There is no LauncherInstalled.dat')->Debug($LauncherInstalled_File);
+      Else
       {
-        $InstallLocation =$Item['InstallLocation' ];
-        $AppName         =$Item['AppName'         ];
-        $InstallLocation=StrTr($InstallLocation, '\\', '/');
-      //$this->Log('Log', $InstallLocation);
-        if(SubStr($AppName, 0, 3)==='UE_')
-          $List[SubStr($AppName, 3)]=$InstallLocation;
+        $LauncherInstalled_Data=File_Get_Contents($LauncherInstalled_File);
+        $LauncherInstalled=Json_DeCode($LauncherInstalled_Data, true);
+        ForEach($LauncherInstalled['InstallationList'] As $Item)
+        {
+          $InstallLocation =$Item['InstallLocation' ];
+          $AppName         =$Item['AppName'         ];
+          $InstallLocation=StrTr($InstallLocation, '\\', '/');
+        //$this->Log('Log', $InstallLocation);
+          if(SubStr($AppName, 0, 3)==='UE_')
+            $List[SubStr($AppName, 3)]=$InstallLocation;
+        }
       }
       
       $Res=[];
@@ -65,7 +71,7 @@
             'FileVersion' =>$FileVersion ,
           ]+Json_Decode(File_Get_Contents($FileVersion), true);
       
-      return $this->Cache=$Res;
+      Return $this->Cache=$Res;
     }
     
     Var $Cache=null;

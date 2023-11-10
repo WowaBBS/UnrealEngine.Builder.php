@@ -8,7 +8,7 @@
     
     Function GetSearch()
     {
-      return $this->Search ?? ($this->Srearch=$this->Get_Singleton('/UE/Search'));
+      return $this->Search ?? ($this->Search=$this->Get_Singleton('/UE/Search'));
     }
   
     Function OpenProject($FileProject)
@@ -47,7 +47,10 @@
     Function _GetEngine($Version)
     {
       $List=$this->LoadEngines();
-      return $List[$Version]?? false;
+      $Res=$List[$Version]?? False;
+      If(!$Res)
+        $this->Log('Error', 'Engine ', $Version, ' not found');
+      return $Res;
     }
   };
   

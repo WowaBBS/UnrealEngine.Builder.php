@@ -8,6 +8,7 @@
     Protected $Info    ;
     Protected $Manager ;
     Protected $Name    ;
+    Protected $Engine  ;
     
     Function _Init(Array $Args)
     {
@@ -63,15 +64,17 @@
     
     Function GetVcs()
     {
+      $Engine=$this->GetEngine();
+      $SvnExe=$Engine? $Engine->GetSvnExe():'svn';
       return $this->Create_Object('/UE/Vcs', [
-        'Exec'=>$this->GetEngine()->GetSvnExe(), 
+        'Exec'=>$SvnExe, 
         'Path'=>$this->GetPath(),
       ]);
     }
 
     Function GetInfo() { return $this->Info ?? $this->_GetInfo(); }
     Function GetEngineVersion() { return $this->GetInfo()['EngineAssociation'] ?? false; }
-    Function GetEngine() { return $this->GetManager()->GetEngine($this->GetEngineVersion()); }
+    Function GetEngine() { return $this->Engine??=$this->GetManager()->GetEngine($this->GetEngineVersion()); }
     
     Function CreateBuilder()
     {
