@@ -1,6 +1,8 @@
 <?
   for($F=GetEnv('WLib_Using')?:__FILE__; $F;) if(@include($F=DirName($F)).'/Using.php') break;
   
+  $Engine       ??='';
+  $EnginePath   ??='';
   $FileProject  ??=''; // ../ *.uproject';
   $OutputFolder ??='Build';
   $CompileMode  ??='Shipping';
@@ -9,6 +11,7 @@
   $Server       ??=false;
   $NoDebugInfo  ??=null;
   $AddArgs      ??=[];
+  $DisabledArgs ??=[];
 
   $Mode='start';
   
@@ -20,11 +23,14 @@
     case 'arg':
       Switch($Arg)
       {
+      case '-Engine'       : $Mode=$Arg; break;
+      case '-EnginePath'   : $Mode=$Arg; break;
       case '-FileProject'  : $Mode=$Arg; break;
       case '-OutputFolder' : $Mode=$Arg; break;
       case '-CompileMode'  : $Mode=$Arg; break;
       case '-Platform'     : $Mode=$Arg; break;
       case '-CookFlavor'   : $Mode=$Arg; break;
+      case '-Disable'      : $Mode=$Arg; break;
       case '--'            : $Mode=$Arg; break;
       
       case '-Server'       : $Server      =true; break;
@@ -35,18 +41,23 @@
           $Loader->Log('Error', 'Arg ', $Arg, ' is unsupported');
       }
       break;
-    case '-FileProject'  : $FileProject  =$Arg; $Mode='arg'; break;
-    case '-OutputFolder' : $OutputFolder =$Arg; $Mode='arg'; break;
-    case '-CompileMode'  : $CompileMode  =$Arg; $Mode='arg'; break;
-    case '-Platform'     : $Platform     =$Arg; $Mode='arg'; break;
-    case '-CookFlavor'   : $CookFlavor   =$Arg; $Mode='arg'; break;
-  //case '-log'          : $LogFile      =$Arg; $Mode='arg'; break;
-    case '--'            : $AddArgs    []=$Arg; break;
+    case '-Engine'       : $Engine         =$Arg; $Mode='arg'; break;
+    case '-EnginePath'   : $EnginePath     =$Arg; $Mode='arg'; break;
+    case '-FileProject'  : $FileProject    =$Arg; $Mode='arg'; break;
+    case '-OutputFolder' : $OutputFolder   =$Arg; $Mode='arg'; break;
+    case '-CompileMode'  : $CompileMode    =$Arg; $Mode='arg'; break;
+    case '-Platform'     : $Platform       =$Arg; $Mode='arg'; break;
+    case '-CookFlavor'   : $CookFlavor     =$Arg; $Mode='arg'; break;
+    case '-Disable'      : $DisabledArgs []=$Arg; $Mode='arg'; break;
+  //case '-log'          : $LogFile        =$Arg; $Mode='arg'; break;
+    case '--'            : $AddArgs      []=$Arg; break;
     }
-
   
   $Manager=$Loader->Get_Singleton('/UE/Manager');
-  $Project=$Manager->OpenProject($FileProject);
+  $Project=$Manager->OpenProject($FileProject, [
+    'Engine'     =>$Engine     ,
+    'EnginePath' =>$EnginePath ,
+  ]);
 
   $Engine =$Project->GetEngine();
   If($Engine)
@@ -65,6 +76,7 @@
     $Builder->SetNoDebugInfo($NoDebugInfo);
 //$Builder->SetEngine('{183191B6-480A-74E8-F0DD-8093791D85C4}');
   $Builder->SetAddArgs($AddArgs);
+  $Builder->SetDisabledArgs($DisabledArgs);
   $Builder->Start();
   $Builder->CopyLogs();
 ?>

@@ -11,17 +11,20 @@
       return $this->Search ?? ($this->Search=$this->Get_Singleton('/UE/Search'));
     }
   
-    Function OpenProject($FileProject)
+    Function OpenProject($FileProject, $Args=[])
     {
+    //$this->Log('Debug', 'OpenProject ' ,$FileProject);
       return $this->Create_Object('/UE/Project', [
         'Manager' =>$this        ,
         'File'    =>$FileProject ,
-      ]);
+      ]+$Args);
     }
     
-    Function GetEngine($Version)
+    Function GetEngine($Version, $Path=Null)
     {
-      return $this->Engines[$Version] ??= $this->_GetEngine($Version);
+      if($Version)
+        return $this->Engines[$Version] ??= $this->_GetEngine($Version, $Path);
+      return $this->_GetEngine($Version, $Path);
     }
     
     Function GetEngines() { return $this->Engines ?: $this->LoadEngines(); }
@@ -44,8 +47,15 @@
       return $Res;
     }
     
-    Function _GetEngine($Version)
+    Function _GetEngine($Version, $Path=Null)
     {
+      if($Path)
+        Return $this->Create_Object('/UE/Instance', [
+          'Manager' =>$this    ,
+          'Version' =>$Version ,
+          'Path'    =>$Path    ,
+        ]);
+      
       $List=$this->LoadEngines();
       $Res=$List[$Version]?? False;
       If(!$Res)

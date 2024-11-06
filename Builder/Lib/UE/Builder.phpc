@@ -93,12 +93,17 @@
         $Path=NormPath(RealPath('./').'/'.$Path);
       return $Path;
     }
+    
+    Protected $DisabledArgs =[];
+    Protected $AddArgs      =[];
 
+    //TODO: Remove
     Protected $Op_Cook         =true  ;
     Protected $Op_Compile      =true  ;
     Protected $Op_Build        =true  ;
     Protected $Op_Stage        =true  ;
     Protected $Is_Compressed   =true  ;
+    Protected $AllMaps         =true  ;
     Protected $Is_Server       =false ;
     Protected $No_Client       =false ;
     Protected $Is_PreReqs      =true  ;
@@ -108,9 +113,28 @@
     Protected $Is_NoDebugInfo  =false ;
     Protected $Is_Utf8Output   =false ;
     Protected $CrashReporter   =true  ;
-    Protected $AddArgs         =[];
 
     Function SetAddArgs($v) { $this->AddArgs=$v; }
+    Function SetDisabledArgs($Args)
+    {
+      $List=[];
+      ForEach($Args As $k=>$v)
+      {
+        If(Is_String($k))
+          $List[StrToLower($k)]=$k;
+        ElseIf(Is_String($v))
+          $List[StrToLower($v)]=$v;
+        Else
+         $this->Log('Error', 'Wrong disable log ', $k, '=>', $v);
+      }
+      $this->DisabledArgs=$List;
+    }
+    
+    Protected Function _Opt(&$Res, $k, $v=Null)
+    {
+      if(IsSet($this->DisabledArgs[StrToLower($k)])) return;
+      $Res[]=Is_Null($v)? $k:$k.$v;
+    }
     
     Function Start()
     {
@@ -124,38 +148,38 @@
       $Opts=[
         'BuildCookRun',
       ];
-      $Opts[]='-project="'.$this->GetProject()->GetFile().'"';
-      $Opts[]='-noP4';
-      $Opts[]='-platform='       .$this->Platform;
-      $Opts[]='-targetplatform=' .$this->Platform;
-      $Opts[]='-clientconfig='   .$this->CompileMode;
-      $Opts[]='-serverconfig='   .$this->CompileMode;
-      if($this->CookFlavor      ) $Opts[]='-cookflavor='.$this->CookFlavor;
-      if($this->Op_Cook         ) $Opts[]='-cook'          ;
-      if($this->Is_Compressed   ) $Opts[]='-Compressed'    ;
-                                  $Opts[]='-allmaps'       ; //<TODO: Optional? Remove?
-      if($this->Op_Build        ) $Opts[]='-build'         ;
-      if($this->Op_Compile      ) $Opts[]='-compile'       ;
-      if($this->Op_Stage        ) $Opts[]='-stage'         ;
-      if($this->Is_Server       ) $Opts[]='-server'        ;
-      if($this->No_Client       ) $Opts[]='-noclient'      ;
-      if($this->Is_PreReqs      ) $Opts[]='-prereqs'       ;
-      if($this->Is_Package      ) $Opts[]='-package'       ;
-      if($this->Is_NoDebugInfo  ) $Opts[]='-nodebuginfo'   ;
-      if($this->CrashReporter   ) $Opts[]='-crashreporter' ;
-      if($this->Is_Utf8Output   ) $Opts[]='-utf8output'    ;
-      if($this->Is_Distribution ) $Opts[]='-distribution'  ;
-      $Opts[]='-pak';
-      $Opts[]='-archive';
-      $Opts[]='-archivedirectory='.$this->GetOutputFolder();
+      $this->_Opt($Opts, '-project=' , '"'.$this->GetProject()->GetFile().'"');
+      $this->_Opt($Opts, '-noP4'    );
+      $this->_Opt($Opts, '-platform='       ,$this->Platform);
+      $this->_Opt($Opts, '-targetplatform=' ,$this->Platform);
+      $this->_Opt($Opts, '-clientconfig='   ,$this->CompileMode);
+      $this->_Opt($Opts, '-serverconfig='   ,$this->CompileMode);
+      if($this->CookFlavor      ) $this->_Opt($Opts, '-cookflavor='    ,$this->CookFlavor);
+      if($this->Op_Cook         ) $this->_Opt($Opts, '-cook'          );
+      if($this->Is_Compressed   ) $this->_Opt($Opts, '-Compressed'    );
+      if($this->AllMaps         ) $this->_Opt($Opts, '-allmaps'       ); //<TODO: Optional? Remove?
+      if($this->Op_Build        ) $this->_Opt($Opts, '-build'         );
+      if($this->Op_Compile      ) $this->_Opt($Opts, '-compile'       );
+      if($this->Op_Stage        ) $this->_Opt($Opts, '-stage'         );
+      if($this->Is_Server       ) $this->_Opt($Opts, '-server'        );
+      if($this->No_Client       ) $this->_Opt($Opts, '-noclient'      );
+      if($this->Is_PreReqs      ) $this->_Opt($Opts, '-prereqs'       );
+      if($this->Is_Package      ) $this->_Opt($Opts, '-package'       );
+      if($this->Is_NoDebugInfo  ) $this->_Opt($Opts, '-nodebuginfo'   );
+      if($this->CrashReporter   ) $this->_Opt($Opts, '-crashreporter' );
+      if($this->Is_Utf8Output   ) $this->_Opt($Opts, '-utf8output'    );
+      if($this->Is_Distribution ) $this->_Opt($Opts, '-distribution'  );
+      $this->_Opt($Opts, '-pak'     );
+      $this->_Opt($Opts, '-archive' );
+      $this->_Opt($Opts, '-archivedirectory', $this->GetOutputFolder());
 
-    # if($this->Manifests             ) $Opts[]='-manifests'          ;
-    # if($this->CreateChunkInstall    ) $Opts[]='-createchunkinstall' ;
-    # if($this->ChunkInstallDirectory ) $Opts[]='-chunkinstalldirectory=' .$this->ChunkInstallDirectory ;
-    # If($this->ChunkInstallVersion   ) $Opts[]='-chunkinstallversion='   .$this->ChunkInstallVersion   ;
+    # if($this->Manifests             ) $this->_Opt($Opts ,'-manifests'          );
+    # if($this->CreateChunkInstall    ) $this->_Opt($Opts ,'-createchunkinstall' );
+    # if($this->ChunkInstallDirectory ) $this->_Opt($Opts ,'-chunkinstalldirectory=' ,$this->ChunkInstallDirectory );
+    # If($this->ChunkInstallVersion   ) $this->_Opt($Opts ,'-chunkinstallversion='   ,$this->ChunkInstallVersion   );
 
       if($StagingDir=$this->StagingDir)
-        $Opts[]='-stagingdirectory='.$StagingDir;
+        $this->_Opt($Opts, '-stagingdirectory=', $StagingDir); //TODO: Quotes
       
       ForEach($this->AddArgs As $Arg)
         $Opts[]=$Arg;

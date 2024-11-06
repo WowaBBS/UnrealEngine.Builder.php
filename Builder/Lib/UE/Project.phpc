@@ -14,6 +14,10 @@
     {
       parent::_Init($Args);
       $this->Manager=$Args['Manager'];
+      $Engine     =$Args['Engine'     ]?? '';
+      $EnginePath =$Args['EnginePath' ]?? '';
+      if($Engine || $EnginePath)
+        $this->Engine=$this->GetManager()->GetEngine($Engine, $EnginePath);
       $File=$Args['File'];
       if($File==='')
       {

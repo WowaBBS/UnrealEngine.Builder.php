@@ -17,11 +17,11 @@
       parent::_Init($Args);
       $this->Manager              =$Args['Manager'              ];
       $this->Path                 =$Args['Path'                 ];
-      $this->Id                   =$Args['Id'                   ];
+      $this->Id                   =$Args['Id'                   ]?? '';
       $this->Version              =$Args['Version'              ];
-      $this->MajorVersion         =$Args['MajorVersion'         ];
-      $this->MinorVersion         =$Args['MinorVersion'         ];
-      $this->PatchVersion         =$Args['PatchVersion'         ];
+      $this->MajorVersion         =$Args['MajorVersion'         ]?? '';
+      $this->MinorVersion         =$Args['MinorVersion'         ]?? '';
+      $this->PatchVersion         =$Args['PatchVersion'         ]?? '';
     # $this->Changelist           =$Args['Changelist'           ]: //4753647,
     # $this->CompatibleChangelist =$Args['CompatibleChangelist' ]: //4541578,
     # $this->IsLicenseeVersion    =$Args['IsLicenseeVersion'    ]: //0,
