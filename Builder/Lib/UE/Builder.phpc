@@ -171,7 +171,7 @@
       if($this->Is_Distribution ) $this->_Opt($Opts, '-distribution'  );
       $this->_Opt($Opts, '-pak'     );
       $this->_Opt($Opts, '-archive' );
-      $this->_Opt($Opts, '-archivedirectory', $this->GetOutputFolder());
+      $this->_Opt($Opts, '-archivedirectory=', $this->GetOutputFolder());
 
     # if($this->Manifests             ) $this->_Opt($Opts ,'-manifests'          );
     # if($this->CreateChunkInstall    ) $this->_Opt($Opts ,'-createchunkinstall' );
